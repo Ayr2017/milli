@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: meilisearch
+    restart: unless-stopped
+    ports:
+      - "${DOCKER_HOST_PORT}:${MEILI_PORT}"
+    environment:
+      - MEILI_ENV=${MEILI_ENV}
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
+      - MEILI_LOG_LEVEL=${MEILI_LOG_LEVEL}
+      - MEILI_HTTP_ADDR=0.0.0.0:${MEILI_PORT}
+      - MEILI_NO_ANALYTICS=${MEILI_NO_ANALYTICS}
+    volumes:
+      - meilisearch_data:${MEILI_DB_PATH}
+    networks:
+      - meilisearch_network
+
+volumes:
+  meilisearch_data:
+
+networks:
+  meilisearch_network:
+    driver: bridge

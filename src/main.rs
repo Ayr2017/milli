@@ -1,4 +1,7 @@
+mod config;
+
 use axum::{Router, routing::get, response::{Html, IntoResponse}, Json, http::{StatusCode, Uri, HeaderMap, header}};
+use axum::routing::post;
 use tower_http::services::ServeDir;
 
 #[tokio::main]
@@ -6,7 +9,8 @@ async fn main() {
     let app = Router::new()
         // API маршруты
         .route("/api/test", get(api_test))
-        
+        .route("/api/indexes", post(create_index))
+
         // Статические ресурсы SvelteKit (JS, CSS, изображения)
         .nest_service("/_app", ServeDir::new("static/_app"))
         .nest_service("/assets", ServeDir::new("static/assets"))
@@ -72,5 +76,10 @@ async fn spa_handler(uri: Uri) -> impl IntoResponse {
 async fn api_test() -> impl IntoResponse {
     Json(serde_json::json!({
         "message": "Hello, Updated World!!!"
+    }))
+}
+async fn create_index() -> impl IntoResponse {
+    Json(serde_json::json!({
+        "message": "Index created successfully!"
     }))
 }
