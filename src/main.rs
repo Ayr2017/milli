@@ -1,4 +1,6 @@
 mod config;
+mod controllers;
+mod app;
 
 use axum::{Router, routing::get, response::{Html, IntoResponse}, Json, http::{StatusCode, Uri, HeaderMap, header}};
 use axum::routing::post;
@@ -9,7 +11,8 @@ async fn main() {
     let app = Router::new()
         // API маршруты
         .route("/api/test", get(api_test))
-        .route("/api/indexes", post(create_index))
+        .route("/api/indexes", get(index_index))
+        .route("/api/indexes_", post(create_index))
 
         // Статические ресурсы SvelteKit (JS, CSS, изображения)
         .nest_service("/_app", ServeDir::new("static/_app"))
@@ -81,5 +84,14 @@ async fn api_test() -> impl IntoResponse {
 async fn create_index() -> impl IntoResponse {
     Json(serde_json::json!({
         "message": "Index created successfully!"
+    }))
+}
+
+async fn index_index() -> impl IntoResponse {
+    Json(serde_json::json!({
+        "data": [
+            {"uid":"customers","name": "Index 1", "searchable": [],"filterable": [], "sortable": []},
+            {"uid":"customers","name": "Index 2", "searchable": [],"filterable": [], "sortable": []},
+        ]
     }))
 }
