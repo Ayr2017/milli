@@ -1,23 +1,31 @@
 <script>
     import {Section} from "flowbite-svelte-blocks";
-    import {Button, Card,  Label, Input} from "flowbite-svelte";
+    import {Button, Card,  Label, Input, Modal, P } from "flowbite-svelte";
 
-    let index_name = '';
+    let open = $state(false);
+    const HTTP_STATUS_OK = 200;
+
+    let name = $state('');
 
     function handleSubmit() {
-        if (!index_name.trim()) return;
+        if (!name.trim()) return;
 
         fetch('/api/indexes', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ index_name })
-        }).then(response => response.json())
+            body: JSON.stringify({ name })
+        }).then(response => {
+            return response.json()
+        })
             .then(data => {
-                console.log('Index created successfully');
-                console.log(data);
-                index_name = '';
+                if(data.code === HTTP_STATUS_OK) {
+                    open = true;
+                    name = '';
+                } else {
+                    console.info(data);
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -29,14 +37,14 @@
     <Section>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card size="lg" class="p-4 text-left sm:p-8 md:p-10">
-                <form on:submit|preventDefault={handleSubmit}>
+                <form onsubmit={handleSubmit}>
                     <div class="mb-6">
                         <Label for="default-input" class="mb-2 block">Name</Label>
                         <Input
                                 id="default-input"
                                 placeholder="Enter index name"
-                                name="index_name"
-                                bind:value={index_name}
+                                name="name"
+                                bind:value={name}
                                 required
                         />
                     </div>
@@ -53,3 +61,11 @@
         </div>
     </Section>
 </div>
+
+<Modal form bind:open title="Terms of Service">
+    <P>Index created successfully!</P>
+    {#snippet footer()}
+        <Button type="submit" value="accept">I accept</Button>
+        <Button type="submit" value="decline" color="alternative">Decline</Button>
+    {/snippet}
+</Modal>
