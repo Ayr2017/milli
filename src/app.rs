@@ -1,9 +1,7 @@
 use std::path::PathBuf;
-use std::sync::Arc;
 use axum::{Router, routing::get, routing::post, response::IntoResponse, http::{StatusCode, Uri, HeaderMap, header}};
 use axum::routing::delete;
 use tower_http::services::ServeDir;
-use crate::config::application::ApplicationConfig;
 
 // Import controllers
 use crate::controllers::api::api_controller::ApiController;

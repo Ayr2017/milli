@@ -1,14 +1,10 @@
-use std::sync::Arc;
 use axum::extract::{Path, State};
 use crate::requests::index::store_index_request::StoreIndexRequest;
 use axum::Json;
 use axum::response::IntoResponse;
-use meilisearch_sdk::client::Client;
 use colored::Colorize;
-use crate::requests::index::delete_index_request::DeleteIndexRequest;
 use crate::responses::indexes::show_index_response::ShowIndexResponse;
 use crate::state::AppState;
-use axum::Json as AxumJson;
 
 pub struct IndexController {}
 
