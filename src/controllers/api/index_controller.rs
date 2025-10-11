@@ -1,23 +1,23 @@
-use axum::extract::{Path, Query};
+use std::sync::Arc;
+use axum::extract::{Path, State};
 use crate::requests::index::store_index_request::StoreIndexRequest;
 use axum::Json;
 use axum::response::IntoResponse;
 use meilisearch_sdk::client::Client;
-use rand::{distr::Alphanumeric, Rng};
 use colored::Colorize;
-use rusqlite::params;
 use crate::requests::index::delete_index_request::DeleteIndexRequest;
 use crate::responses::indexes::show_index_response::ShowIndexResponse;
+use crate::state::AppState;
+use axum::Json as AxumJson;
 
-pub struct IndexController;
+pub struct IndexController {}
 
 impl IndexController {
-    pub async fn index() -> impl IntoResponse {
-        let client = Client::new(
-            "http://localhost:7700",
-            Some("your_master_key_here_change_this"),
-        )
-        .unwrap();
+    pub async fn index(
+        State(state): State<AppState>
+    ) -> impl IntoResponse {
+        
+        let client = state.meilisearch_client;
 
         let indexes = client.list_all_indexes().await.unwrap();
         let data = serde_json::json!(
@@ -32,7 +32,7 @@ impl IndexController {
 
         for index in &indexes.results {
             println!(
-                "Индекс: {:?}, Первичный ключ: {:?} Всё: {:?}",
+                "Index: {:?}, Primary key: {:?} Full: {:?}",
                 index.uid, index.primary_key, index
             );
         }
@@ -40,13 +40,12 @@ impl IndexController {
         Json(data)
     }
 
-    pub async fn store(Json(payload): Json<StoreIndexRequest>) -> impl IntoResponse {
-        let client = Client::new(
-            "http://localhost:7700",
-            Some("your_master_key_here_change_this"),
-        )
-        .unwrap();
-        
+    pub async fn store(
+        State(state): State<AppState>,
+        Json(payload): Json<StoreIndexRequest>,        
+    ) -> impl IntoResponse {
+        let client = state.meilisearch_client;
+
         println!("Запрос на создание индекса: {:?}", payload);
         
         let task_info = client.create_index(payload.name, payload.pkey.as_deref()).await.unwrap(); 
@@ -62,16 +61,9 @@ impl IndexController {
     
     pub async fn delete(
         Path(uid): Path<String>,
-        axum::Json(body): axum::Json<DeleteIndexRequest>,
+        State(state): State<AppState>,
     ) -> impl IntoResponse {
-        println!("Params: {:?}", body);
-        println!("Удаление индекса: {}", uid);
-        
-        // Получение конфигурации из переменных окружения
-        let meilisearch_url = "http://localhost:7700".to_string();
-        let master_key = "your_master_key_here_change_this";
-        
-        let client = Client::new(&meilisearch_url, Some(master_key)).unwrap();
+        let client = state.meilisearch_client;
         
         match client.delete_index(uid.clone()).await {
             Ok(task_info) => {
@@ -101,12 +93,9 @@ impl IndexController {
     
     pub async fn show(
         Path(uid): Path<String>,
+        State(state): State<AppState>,
     ) -> impl IntoResponse {
-        let client = Client::new(
-            "http://localhost:7700",
-            Some("your_master_key_here_change_this"),
-        )
-        .unwrap();  
+        let client = state.meilisearch_client;
             
         let index_info = client.get_index(uid).await.unwrap();
         let stats = index_info.get_stats().await.unwrap();

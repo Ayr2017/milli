@@ -1,14 +1,19 @@
 use std::path::PathBuf;
+use std::sync::Arc;
 use axum::{Router, routing::get, routing::post, response::IntoResponse, http::{StatusCode, Uri, HeaderMap, header}};
 use axum::routing::delete;
 use tower_http::services::ServeDir;
-
+use crate::config::application::ApplicationConfig;
 
 // Import controllers
 use crate::controllers::api::api_controller::ApiController;
 use crate::controllers::api::index_controller::IndexController;
+use crate::state::AppState;
 
-pub async fn create_app() -> Router {
+
+pub async fn create_app(
+    state: AppState
+) -> Router {
     Router::new()
         // API routes
         .route("/api/test", get(ApiController::test))
@@ -23,6 +28,7 @@ pub async fn create_app() -> Router {
 
         // All other routes (including /about, /contact, etc.) - SPA fallback
         .fallback(spa_handler)
+        .with_state(state)
 }
 
 async fn spa_handler(uri: Uri) -> impl IntoResponse {
