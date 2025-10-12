@@ -6,6 +6,7 @@ use tower_http::services::ServeDir;
 // Import controllers
 use crate::controllers::api::api_controller::ApiController;
 use crate::controllers::api::index_controller::IndexController;
+use crate::controllers::api::data_source_controller::DataSourceController;
 use crate::state::AppState;
 
 
@@ -19,6 +20,7 @@ pub async fn create_app(
         .route("/api/indexes", post(IndexController::store))
         .route("/api/indexes/{:uid}", delete(IndexController::delete))
         .route("/api/indexes/{:uid}", get(IndexController::show))
+        .route("/api/data-sources", get(DataSourceController::index))
 
         // Static resources for SvelteKit (JS, CSS, images)
         .nest_service("/_app", ServeDir::new(PathBuf::from("static/_app")))

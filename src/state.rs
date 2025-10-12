@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use meilisearch_sdk::errors::Error;
 use meilisearch_sdk::client::Client;
 use crate::config::application::ApplicationConfig;
 

@@ -5,6 +5,8 @@
 
     let name = $state('');
     let pkey = $state('');
+    let formModal = $state(false);
+    let error = $state("");
 
     function handleSubmit() {
         if (!name.trim()) return;
@@ -34,8 +36,11 @@
             });
     }
 
-    let formModal = $state(false);
-    let error = $state("");
+    function close() {
+        open = false;
+    }
+
+
 
     function onaction({ action, data }: { action: string; data: FormData }) {
     }
@@ -72,7 +77,7 @@
                     required />
         </Label>
         <div class="space-y-4 justify-between">
-            <Button color="gray" >Close</Button>
+            <Button color="gray" onclick={close}> Close</Button>
             <Button type="submit">Save index</Button>
             </div>
     </div>

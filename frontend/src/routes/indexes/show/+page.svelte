@@ -46,9 +46,8 @@
                 </P>
             </Card>
         {:else if indexData}
+            <div class="d-flex flex gap-4">
             <Card size="lg" class="p-4 text-left sm:p-8 md:p-10 w-full">
-                <h2 class="text-2xl mb-4 dark:text-primary-900">Index: {indexData.uid}</h2>
-
                 <!-- Basic Information -->
                 <div class="mb-6">
                     <h3 class="text-xl dark:text-amber-100 mb-3">Basic Information</h3>
@@ -89,6 +88,12 @@
                         </TableBody>
                     </Table>
                 </div>
+            </Card>
+
+            <Card size="lg" class="p-4 text-left sm:p-8 md:p-10 w-full">
+                <h2 class="text-2xl mb-4 dark:text-primary-900">Index: {indexData.uid}</h2>
+
+
 
                 <!-- Settings -->
                 <div class="mb-6">
@@ -218,6 +223,7 @@
                     <Button color="blue" onclick="{addDocuments}" class="mr-2">Add documents</Button>
                 </div>
             </Card>
+            </div>
         {:else}
             <Card size="lg" class="p-4 text-left sm:p-8 md:p-10 w-full">
                 <P>No data available</P>
