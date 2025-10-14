@@ -2,11 +2,13 @@ use std::sync::Arc;
 use meilisearch_sdk::errors::Error;
 use meilisearch_sdk::client::Client;
 use crate::config::application::ApplicationConfig;
+use crate::database::Database;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AppState {
     pub config: Arc<ApplicationConfig>,
     pub meilisearch_client: Arc<Client>,
+    pub database: Option<Arc<Database>>,
 }
 
 impl AppState {
@@ -21,6 +23,13 @@ impl AppState {
         Self {
             config: Arc::new(config),
             meilisearch_client,
+            database: None,
         }
     }
+    
+    pub fn set_database(&mut self, database: Arc<Database>) -> &mut Self {
+        self.database = Some(database);
+        self
+    }
+
 }

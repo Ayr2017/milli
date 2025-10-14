@@ -12,9 +12,10 @@
 
 
     onMount(async () => {
-        const response = await fetch('/api/data-sources');
-        data = await response.json();
-        console.log(data);
+        let response = await fetch('/api/data-sources');
+        let json = await response.json();
+        console.log(json);
+        data = json.data_sources;
     });
 
     function timeout() {
@@ -67,8 +68,10 @@
 
     <Table>
         <TableHead>
-            <TableHeadCell>Source id</TableHeadCell>
-            <TableHeadCell>Source name</TableHeadCell>
+            <TableHeadCell>Name</TableHeadCell>
+            <TableHeadCell>Host</TableHeadCell>
+            <TableHeadCell>Path</TableHeadCell>
+            <TableHeadCell>Type</TableHeadCell>
             <TableHeadCell>Created at</TableHeadCell>
             <TableHeadCell></TableHeadCell>
         </TableHead>
@@ -76,6 +79,9 @@
             {#each data as datum}
                 <TableBodyRow id={datum.id}>
                     <TableBodyCell>{datum.name}</TableBodyCell>
+                    <TableBodyCell>{datum.host}</TableBodyCell>
+                    <TableBodyCell>{datum.database_path}</TableBodyCell>
+                    <TableBodyCell>{datum.database_type}</TableBodyCell>
                     <TableBodyCell>{datum.created_at}</TableBodyCell>
                     <TableBodyCell>
                         <Button pill={true} outline={true} class="p-2! border-blue-600 hover:cursor-pointer" size="xl" href="" >

@@ -13,6 +13,7 @@ use crate::state::AppState;
 pub async fn create_app(
     state: AppState
 ) -> Router {
+    
     Router::new()
         // API routes
         .route("/api/test", get(ApiController::test))
