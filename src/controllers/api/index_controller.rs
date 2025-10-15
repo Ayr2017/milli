@@ -25,14 +25,6 @@ impl IndexController {
                 })
             }).collect::<Vec<_>>()
         );
-
-        for index in &indexes.results {
-            println!(
-                "Index: {:?}, Primary key: {:?} Full: {:?}",
-                index.uid, index.primary_key, index
-            );
-        }
-
         Json(data)
     }
 
@@ -96,7 +88,7 @@ impl IndexController {
         let index_info = client.get_index(uid).await.unwrap();
         let stats = index_info.get_stats().await.unwrap();
         let settings = index_info.get_settings().await.unwrap();
-        println!("{:?}", stats);
+        println!("{}", format!("{:?}", stats).bright_blue());
         let data = serde_json::json!({
         "uid": index_info.uid,
         "created_at": index_info.created_at,

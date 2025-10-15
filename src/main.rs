@@ -1,5 +1,6 @@
 use std::ops::Deref;
 use std::sync::Arc;
+use anyhow::Context;
 use crate::config::application::ApplicationConfig;
 use crate::database::Database;
 use crate::state::AppState;
@@ -16,20 +17,20 @@ mod database;
 mod db;
 
 #[tokio::main]
-async fn main() {
-    let config = ApplicationConfig::new().unwrap();
-    println!("Путь к базе данных: {}", config.db_path); // Добавьте эту строку
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    initialize_and_run_server().await
+}
 
-    let mut state = AppState::new(config.clone());
-
-    let db = Database::new(config.db_path.deref()).unwrap();
-    state.set_database(Arc::new(db.clone()));
-
-    // Create the application using the app module
+async fn initialize_and_run_server() -> Result<(), Box<dyn std::error::Error>> {
+    let config = ApplicationConfig::new().await.expect("Failed to load config");
+    let database = Database::new(&config.db_path)?;
+    let state = AppState::new(config, database).await?;
     let app = app::create_app(state).await;
 
-    // Start the server
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await.unwrap();
-    println!("Server running on http://127.0.0.1:3000");
-    axum::serve(listener, app).await.unwrap();
+    let server_address = "127.0.0.1:3000";
+    let listener = tokio::net::TcpListener::bind(server_address).await?;
+    println!("Server running on http://{}", server_address);
+
+    axum::serve(listener, app).await?;
+    Ok(())
 }

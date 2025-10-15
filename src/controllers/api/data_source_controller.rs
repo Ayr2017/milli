@@ -1,36 +1,69 @@
-use crate::database::Database;
-use crate::requests::index::store_index_request::StoreIndexRequest;
-use crate::responses::indexes::show_index_response::ShowIndexResponse;
+use anyhow::Context;
 use crate::state::AppState;
 use axum::Json;
 use axum::extract::{Path, State};
 use axum::response::IntoResponse;
+use colored::Color::Red;
 use colored::Colorize;
+use rusqlite::fallible_iterator::FallibleIterator;
 
 pub struct DataSourceController {}
 
 impl DataSourceController {
     pub async fn index(State(state): State<AppState>) -> impl IntoResponse {
-        let conn = state.database.unwrap().get_pool_connection().unwrap();
-        let mut stmt = conn.prepare("SELECT * FROM data_sources").unwrap();
-        let ds_iter = stmt
-            .query_map([], |row| {
-                Ok(serde_json::json!({
-                    "id": row.get::<_, u32>(0)?,
-                    "name": row.get::<_, String>(1)?,
-                    "host": row.get::<_, String>(2)?,
-                    "database": row.get::<_, String>(3)?,
-                    "username": row.get::<_, String>(4)?,
-                    "password": row.get::<_, String>(5)?,
-                    "port": row.get::<_, u16>(6)?,
-                    "database_path": row.get::<_, String>(7)?,
-                    "database_name": row.get::<_, String>(8)?,
-                    "database_type": row.get::<_, String>(9)?,
-                    "created_at": row.get::<_, String>(10)?,
-                    "updated_at": row.get::<_, String>(11)?
-                }))
-            })
-            .unwrap();
+        let conn = match state.database.get_pool_connection()
+            .await {
+            Ok(connection) => connection,
+            Err(e) => {
+                eprintln!("{} {}", "Failed to get DB connection: ".color("Red"), e);
+                return Json(serde_json::json!({
+                "code": 500,
+                "success": false,
+                "message": "Database connection error"
+            }));
+            }
+        };
+
+
+        // Безопасная подготовка запроса
+        let mut stmt = match conn.prepare("SELECT id, name, host, database, username, port, database_path, database_name, database_type, created_at, updated_at FROM data_sources") {
+            Ok(stmt) => stmt,
+            Err(e) => {
+                eprintln!("Failed to prepare statement: {:?}", e);
+                return Json(serde_json::json!({
+                "code": 500,
+                "success": false,
+                "message": "Database query error"
+            }));
+            }
+        };
+        let ds_iter = match stmt.query_map([], |row| {
+            Ok(serde_json::json!({
+            "id": row.get::<_, u32>(0)?,
+            "name": row.get::<_, String>(1)?,
+            "host": row.get::<_, String>(2)?,
+            "database": row.get::<_, String>(3)?,
+            "username": row.get::<_, String>(4)?,
+            // НЕ возвращаем пароль из соображений безопасности
+            "port": row.get::<_, u16>(5)?,
+            "database_path": row.get::<_, String>(6)?,
+            "database_name": row.get::<_, String>(7)?,
+            "database_type": row.get::<_, String>(8)?,
+            "created_at": row.get::<_, String>(9)?,
+            "updated_at": row.get::<_, String>(10)?
+        }))
+        }) {
+            Ok(iter) => iter,
+            Err(e) => {
+                eprintln!("Failed to execute query: {:?}", e);
+                return Json(serde_json::json!({
+                "code": 500,
+                "success": false,
+                "message": "Database query execution error"
+            }));
+            }
+        };
+
 
         let mut ds = Vec::new();
         for user in ds_iter {

@@ -56,7 +56,7 @@ impl Database {
         )?;
         Ok(())
     }
-    pub fn get_pool_connection(&self) -> Result<r2d2::PooledConnection<SqliteConnectionManager>, anyhow::Error> {
+    pub async fn get_pool_connection(&self) -> Result<r2d2::PooledConnection<SqliteConnectionManager>, anyhow::Error> {
         Ok(self.pool.get()?)
     }
 }

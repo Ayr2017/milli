@@ -18,7 +18,7 @@ pub struct ConfigError {
 }
 
 impl ApplicationConfig {
-    pub fn new() -> Result<Self, ConfigError> {
+    pub async fn new() -> Result<Self, ConfigError> {
         dotenv().ok();
         Ok(Self {
             meilisearch_host: env::var("MEILI_HOST").map_err(|_| ConfigError {
