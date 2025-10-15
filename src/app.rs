@@ -22,6 +22,8 @@ pub async fn create_app(
         .route("/api/indexes/{:uid}", delete(IndexController::delete))
         .route("/api/indexes/{:uid}", get(IndexController::show))
         .route("/api/data-sources", get(DataSourceController::index))
+        .route("/api/data-sources", post(DataSourceController::store))
+        .route("/api/data-sources/{:id}", post(DataSourceController::destroy))
 
         // Static resources for SvelteKit (JS, CSS, images)
         .nest_service("/_app", ServeDir::new(PathBuf::from("static/_app")))

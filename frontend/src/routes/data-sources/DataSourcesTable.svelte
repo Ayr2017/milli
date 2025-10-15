@@ -8,7 +8,7 @@
     import CreateDataSourceModal from "./CreateDataSourceModal.svelte";
 
     let data = [];
-    let indexName = '';
+    let dsName = '';
     let toastStatus = false;
 
 
@@ -22,14 +22,14 @@
     function timeout() {
         setTimeout(function () {
             toastStatus = false;
-            indexName = '';
+            dsName = '';
             console.log('Index removed');
             console.log(toastStatus);
-            console.log(indexName);
+            console.log(dsName);
         }, 5000);
     }
 
-    async function deleteIndex(index: string){
+    async function deleteDs(index: string){
         fetch('/api/data-sources/' + index, {
             method: 'DELETE',
             headers: {
@@ -44,7 +44,7 @@
             return response.json();
         }).then(function(response){
             document.querySelector('#' + index).remove();
-            indexName = index;
+            dsName = index;
             toastStatus = true;
             timeout();
         }).catch(function(error){
@@ -59,12 +59,12 @@
 <Section class="py-4 sm:py-6 md:py-8">
 
     <Toast color="green" class="fixed top-4 right-4
- z-500 outline" dismissable={!!indexName} transition={slide} bind:toastStatus>
+ z-500 outline" dismissable={!!dsName} transition={slide} bind:toastStatus>
         {#snippet icon()}
             <CheckCircleSolid class="h-5 w-5" />
             <span class="sr-only">Check icon</span>
         {/snippet}
-        Index {indexName} removed successfully.
+        Data Source {dsName} removed successfully.
     </Toast>
 
     <Table>
@@ -88,7 +88,7 @@
                         <Button pill={true} outline={true} class="p-2! border-blue-600 hover:cursor-pointer" size="xl" href="" >
                             <FileDocSolid class="text-blue-600 h-6 w-6" />
                         </Button>
-                        <Button pill={true} outline={true} class="p-2! border-red-600 hover:cursor-pointer" size="xl" >
+                        <Button pill={true} outline={true} onclick="deleteDs()" class="p-2! border-red-600 hover:cursor-pointer" size="xl" >
                             <TrashBinOutline class="text-red-600 h-6 w-6" />
                         </Button>
                     </TableBodyCell>
