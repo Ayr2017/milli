@@ -67,7 +67,7 @@
         Data Source {dsName} removed successfully.
     </Toast>
 
-    <Table>
+    <Table hoverable={true}>
         <TableHead>
             <TableHeadCell>Name</TableHeadCell>
             <TableHeadCell>Host</TableHeadCell>
@@ -85,10 +85,10 @@
                     <TableBodyCell>{datum.database_type}</TableBodyCell>
                     <TableBodyCell>{datum.created_at}</TableBodyCell>
                     <TableBodyCell>
-                        <Button pill={true} outline={true} class="p-2! border-blue-600 hover:cursor-pointer" size="xl" href="" >
+                        <Button pill={true} outline={true} class="p-2! dark:border-blue-600 border-blue-600 hover:cursor-pointer" size="xl" href="" >
                             <FileDocSolid class="text-blue-600 h-6 w-6" />
                         </Button>
-                        <Button pill={true} outline={true} onclick="deleteDs()" class="p-2! border-red-600 hover:cursor-pointer" size="xl" >
+                        <Button pill={true} outline={true} onclick="deleteDs()" class="p-2! dark:border-red-600 border-red-600 hover:cursor-pointer" size="xl" >
                             <TrashBinOutline class="text-red-600 h-6 w-6" />
                         </Button>
                     </TableBodyCell>
