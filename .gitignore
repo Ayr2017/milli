@@ -126,7 +126,6 @@ dist/
 
 # Static adapter output
 static/
-
 # Vite
 .vite/
 
