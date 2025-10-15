@@ -11,6 +11,4 @@ pub struct StoreDataSourceRequest {
     pub database_path: String,
     pub database_name: String,
     pub database_type: String,
-    pub created_at: String,
-    pub updated_at: String,
 }

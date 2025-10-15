@@ -1,14 +1,14 @@
 use std::path::PathBuf;
-use axum::{Router, routing::get, routing::post, response::IntoResponse, http::{StatusCode, Uri, HeaderMap, header}};
+use axum::{Router, routing::get, routing::post, response::IntoResponse, http::{StatusCode, Uri, HeaderMap, header}, middleware};
 use axum::routing::delete;
 use tower_http::services::ServeDir;
+use tower_http::trace::TraceLayer;
 
 // Import controllers
 use crate::controllers::api::api_controller::ApiController;
 use crate::controllers::api::index_controller::IndexController;
 use crate::controllers::api::data_source_controller::DataSourceController;
 use crate::state::AppState;
-
 
 pub async fn create_app(
     state: AppState
@@ -23,7 +23,7 @@ pub async fn create_app(
         .route("/api/indexes/{:uid}", get(IndexController::show))
         .route("/api/data-sources", get(DataSourceController::index))
         .route("/api/data-sources", post(DataSourceController::store))
-        .route("/api/data-sources/{:id}", post(DataSourceController::destroy))
+        // .route("/api/data-sources/{:id}", post(DataSourceController::destroy))
 
         // Static resources for SvelteKit (JS, CSS, images)
         .nest_service("/_app", ServeDir::new(PathBuf::from("static/_app")))
@@ -32,6 +32,37 @@ pub async fn create_app(
         // All other routes (including /about, /contact, etc.) - SPA fallback
         .fallback(spa_handler)
         .with_state(state)
+}
+
+/**
+
+    .layer(middleware::from_fn(request_logging_middleware))
+    .layer(TraceLayer::new_for_http())
+*/
+async fn request_logging_middleware(
+    request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+
+
+
+    let method = request.method().clone();
+    let uri = request.uri().clone();
+    
+    // Логируем входящий запрос
+    println!("🚀 {} {} - Incoming request", method, uri);
+    
+    // Если это POST запрос к API, попробуем залогировать тело запроса
+    if method == axum::http::Method::POST && uri.path().starts_with("/api") {
+        println!("📝 POST request to API endpoint: {}", uri.path());
+    }
+    
+    let response = next.run(request).await;
+    
+    // Логируем статус ответа
+    println!("📤 {} {} - Response status: {}", method, uri, response.status());
+    
+    response
 }
 
 async fn spa_handler(uri: Uri) -> impl IntoResponse {

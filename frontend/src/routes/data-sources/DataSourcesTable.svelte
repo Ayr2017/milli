@@ -55,8 +55,8 @@
 
 
 </script>
-<CreateDataSourceModal />
 <Section class="py-4 sm:py-6 md:py-8">
+    <CreateDataSourceModal />
 
     <Toast color="green" class="fixed top-4 right-4
  z-500 outline" dismissable={!!dsName} transition={slide} bind:toastStatus>
