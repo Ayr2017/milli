@@ -7,6 +7,7 @@ use axum::response::IntoResponse;
 use colored::Colorize;
 use rusqlite::fallible_iterator::FallibleIterator;
 use serde_json::json;
+use crate::requests::data_source::test_data_source_request::TestDataSourceRequest;
 
 pub struct DataSourceController {}
 
@@ -300,7 +301,7 @@ impl DataSourceController {
         }
     }
 
-    pub async fn show(Path(id): Path<String>, State(state): State<AppState>) -> impl IntoResponse {
+    pub async fn show(Path(id): Path<u32>, State(state): State<AppState>) -> impl IntoResponse {
         let conn = match state.database.get_pool_connection().await {
             Ok(connection) => connection,
             Err(e) => {
@@ -322,38 +323,107 @@ impl DataSourceController {
             [&id],
             |row| {
                 Ok(json!({
-                "id": row.get::<_, String>("id")?,
-                "name": row.get::<_, String>("name")?,
-                "url": row.get::<_, String>("url")?,
-                "created_at": row.get::<_, String>("created_at")?,
-                // Добавьте другие поля вашей таблицы
-            }))
+                    "id": row.get::<_, u32>("id")?,
+                    "name": row.get::<_, String>("name")?,
+                    "host": row.get::<_, String>("host")?,
+                    "database": row.get::<_, String>("database")?,
+                    "username": row.get::<_, String>("username")?,
+                    "password": "********",
+                    "port": row.get::<_, u16>("port")?,
+                    "database_path": row.get::<_, String>("database_path")?,
+                    "database_name": row.get::<_, String>("database_name")?,
+                    "database_type": row.get::<_, String>("database_type")?,
+                    "created_at": row.get::<_, String>("created_at")?,
+                }))
             },
         ) {
             Ok(data_source) => {
                 // Успешное получение данных
-                (StatusCode::OK,
-                Json(json!({
-                    "code": 200,
-                    "success": true,
-                    "message": "Data source found",
-                    "data_source": data_source
-                })))
-            },
+                (
+                    StatusCode::OK,
+                    Json(json!({
+                        "code": 200,
+                        "success": true,
+                        "message": "Data source found",
+                        "data_source": data_source
+                    })),
+                )
+            }
             Err(e) => {
                 eprintln!("{} {}", "❌ Failed to query row: ".color("Red"), e);
-                (StatusCode::INTERNAL_SERVER_ERROR,
-                Json(json!(
-                    {
-                        "code": 500,
-                        "success": false,
-                        "message": "Failed to query row",
-                        "error": format!("{}", e)
-                    }
-                )))
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(json!(
+                        {
+                            "code": 500,
+                            "success": false,
+                            "message": "Failed to query row",
+                            "error": format!("{}", e)
+                        }
+                    )),
+                )
             }
         }
     }
 
-pub async fn update() {}
+    pub async fn update() {}
+
+    pub async fn test(
+        State(state): State<AppState>,
+        Json(payload): Json<TestDataSourceRequest>,
+    ) -> impl IntoResponse {
+        let conn = match state.database.get_pool_connection().await {
+            Ok(connection) => connection,
+            Err(e) => {
+                eprintln!("{} {}", "❌ Failed to get DB connection: ".color("Red"), e),
+                return (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(json!({
+                        "code": 500,
+                        "success": false,
+                        "message": "Database connection error",
+                        "error": format!("{}", e)
+                    })),
+                );
+            }
+        };
+
+        let id = payload.id;
+
+        // Пример 1: Получение записи по ID из таблицы users
+        let row = match conn.query_row("SELECT * FROM users WHERE id = $1", [id], |row| {
+            return Ok(row)
+        }).await
+        {
+            Ok(user) => {
+                (
+                    StatusCode::OK,
+                    Json(json!({
+                    "code": 200,
+                    "success": true,
+                    "message": "User found",
+                    "data": {
+                        "id": user.id,
+                        "name": user.name,
+                        "email": user.email
+                        // добавьте другие поля по необходимости
+                    }
+                })),
+                )
+            }
+            Err(e) => {
+                eprintln!("{} {}", "❌ Failed to fetch user: ".color("Red"), e);
+                (
+                    StatusCode::NOT_FOUND,
+                    Json(json!({
+                    "code": 404,
+                    "success": false,
+                    "message": "User not found",
+                    "error": format!("{}", e)
+                })),
+                )
+            }
+        }
+
+    }
 }

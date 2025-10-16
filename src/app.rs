@@ -22,6 +22,7 @@ pub async fn create_app(
         .route("/api/indexes/{:uid}", get(IndexController::show))
         .route("/api/data-sources", get(DataSourceController::index))
         .route("/api/data-sources", post(DataSourceController::store))
+        .route("/api/data-sources/test", post(DataSourceController::test))
         .route("/api/data-sources/{:id}", delete(DataSourceController::destroy))
         .route("/api/data-sources/{:id}", get(DataSourceController::show))
 
