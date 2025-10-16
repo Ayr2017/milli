@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Button, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Toast} from "flowbite-svelte";
-    import { TrashBinOutline, FileDocSolid, CheckCircleSolid, ExclamationCircleSolid } from "flowbite-svelte-icons";
+    import { TrashBinOutline, FileDocSolid, CheckCircleSolid } from "flowbite-svelte-icons";
     import { Section } from "flowbite-svelte-blocks";
 
     import { slide } from "svelte/transition";
@@ -29,22 +29,22 @@
         }, 5000);
     }
 
-    async function deleteDs(index: string){
-        fetch('/api/data-sources/' + index, {
+    async function deleteDs(id: string){
+        fetch('/api/data-sources/' + id, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
                 'Method': 'DELETE',
             },
             body: JSON.stringify({
-                uid: index
+                id
             }),
         }).then(function(response){
             console.log(response);
-            return response.json();
+            // return response.json();
         }).then(function(response){
-            document.querySelector('#' + index).remove();
-            dsName = index;
+            document.querySelector('#data_source_' + id).remove();
+            dsName = id;
             toastStatus = true;
             timeout();
         }).catch(function(error){
@@ -78,17 +78,17 @@
         </TableHead>
         <TableBody>
             {#each data as datum}
-                <TableBodyRow id={datum.id}>
+                <TableBodyRow id="data_source_{datum.id}">
                     <TableBodyCell>{datum.name}</TableBodyCell>
                     <TableBodyCell>{datum.host}</TableBodyCell>
                     <TableBodyCell>{datum.database_path}</TableBodyCell>
                     <TableBodyCell>{datum.database_type}</TableBodyCell>
                     <TableBodyCell>{datum.created_at}</TableBodyCell>
                     <TableBodyCell>
-                        <Button pill={true} outline={true} class="p-2! dark:border-blue-600 border-blue-600 hover:cursor-pointer" size="xl" href="" >
+                        <Button pill={true} outline={true} class="p-2! dark:border-blue-600 border-blue-600 hover:cursor-pointer" size="xl" href="/data-sources/show?id={datum.id}" >
                             <FileDocSolid class="text-blue-600 h-6 w-6" />
                         </Button>
-                        <Button pill={true} outline={true} onclick="deleteDs()" class="p-2! dark:border-red-600 border-red-600 hover:cursor-pointer" size="xl" >
+                        <Button pill={true} outline={true} onclick="{()=> deleteDs(datum.id)}" class="p-2! dark:border-red-600 border-red-600 hover:cursor-pointer" size="xl" >
                             <TrashBinOutline class="text-red-600 h-6 w-6" />
                         </Button>
                     </TableBodyCell>

@@ -1,12 +1,9 @@
 use crate::requests::data_source::store_data_source_request::StoreDataSourceRequest;
 use crate::state::AppState;
-use anyhow::Context;
 use axum::Json;
 use axum::extract::{Path, State};
-use axum::response::IntoResponse;
 use axum::http::StatusCode;
-use chrono::Utc;
-use colored::Color::Red;
+use axum::response::IntoResponse;
 use colored::Colorize;
 use rusqlite::fallible_iterator::FallibleIterator;
 use serde_json::json;
@@ -88,7 +85,7 @@ impl DataSourceController {
         Json(payload): Json<StoreDataSourceRequest>,
     ) -> impl IntoResponse {
         println!("🔍 Received payload: {:#?}", payload);
-        
+
         // Проверим валидность данных
         if payload.name.is_empty() {
             println!("❌ Validation error: name is empty");
@@ -101,7 +98,7 @@ impl DataSourceController {
                     "errors": {
                         "name": ["Name field is required and cannot be empty"]
                     }
-                }))
+                })),
             );
         }
 
@@ -116,7 +113,7 @@ impl DataSourceController {
                     "errors": {
                         "host": ["Host field is required and cannot be empty"]
                     }
-                }))
+                })),
             );
         }
 
@@ -131,12 +128,15 @@ impl DataSourceController {
                     "errors": {
                         "port": ["Port must be between 1 and 65535"]
                     }
-                }))
+                })),
             );
         }
 
         if !["sqlite", "mysql", "postgresql"].contains(&payload.database_type.as_str()) {
-            println!("❌ Validation error: invalid database_type {}", payload.database_type);
+            println!(
+                "❌ Validation error: invalid database_type {}",
+                payload.database_type
+            );
             return (
                 StatusCode::UNPROCESSABLE_ENTITY,
                 Json(json!({
@@ -146,7 +146,7 @@ impl DataSourceController {
                     "errors": {
                         "database_type": ["Database type must be sqlite, mysql, or postgresql"]
                     }
-                }))
+                })),
             );
         }
 
@@ -161,13 +161,13 @@ impl DataSourceController {
                         "success": false,
                         "message": "Database connection error",
                         "error": format!("{}", e)
-                    }))
+                    })),
                 );
             }
         };
-        
+
         let sql = "INSERT INTO data_sources (name, host, database, username, password, port, database_path, database_name, database_type) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)";
-        
+
         let mut stmt = match conn.prepare(sql) {
             Ok(stmt) => stmt,
             Err(e) => {
@@ -179,11 +179,11 @@ impl DataSourceController {
                         "success": false,
                         "message": "Database query preparation error",
                         "error": format!("{}", e)
-                    }))
+                    })),
                 );
             }
         };
-        
+
         // Подробное логирование параметров
         let params = [
             &payload.name,
@@ -196,35 +196,33 @@ impl DataSourceController {
             &payload.database_name,
             &payload.database_type,
         ];
-        
+
         let result = match stmt.execute(&params) {
-            Ok(rows_affected) => {
-                (
-                    StatusCode::CREATED,
-                    Json(json!({
-                        "code": 201,
-                        "success": true,
-                        "message": "Data source created successfully",
-                        "rows_affected": rows_affected
-                    }))
-                )
-            }
+            Ok(rows_affected) => (
+                StatusCode::CREATED,
+                Json(json!({
+                    "code": 201,
+                    "success": true,
+                    "message": "Data source created successfully",
+                    "rows_affected": rows_affected
+                })),
+            ),
             Err(e) => {
                 eprintln!("❌ Failed to execute query: {:?}", e);
                 eprintln!("❌ Error kind: {:?}", e.sqlite_error_code());
                 eprintln!("❌ Error message: {}", e);
-                
+
                 // Проверим конкретные типы ошибок SQLite
                 let error_message = match e.sqlite_error_code() {
                     Some(rusqlite::ErrorCode::ConstraintViolation) => {
                         "Constraint violation: check your data types and constraints".to_string()
-                    },
+                    }
                     Some(rusqlite::ErrorCode::SchemaChanged) => {
                         "Database schema has changed".to_string()
-                    },
-                    _ => format!("Database execution error: {}", e)
+                    }
+                    _ => format!("Database execution error: {}", e),
                 };
-                
+
                 (
                     StatusCode::UNPROCESSABLE_ENTITY,
                     Json(json!({
@@ -233,10 +231,129 @@ impl DataSourceController {
                         "message": "Database execution failed",
                         "error": error_message,
                         "sqlite_error_code": format!("{:?}", e.sqlite_error_code())
-                    }))
+                    })),
                 )
             }
         };
         result
     }
+
+    pub async fn destroy(
+        Path(id): Path<String>,
+        State(state): State<AppState>,
+    ) -> impl IntoResponse {
+        let conn = match state.database.get_pool_connection().await {
+            Ok(connection) => connection,
+            Err(e) => {
+                eprintln!("{} {}", "❌ Failed to get DB connection: ".color("Red"), e);
+                return (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(json!({
+                        "code": 500,
+                        "success": false,
+                        "message": "Database connection error",
+                        "error": format!("{}", e)
+                    })),
+                );
+            }
+        };
+
+        match conn.execute("DELETE FROM data_sources WHERE id = ?", [id]) {
+            Ok(rows_affected) => {
+                // Проверяем, была ли удалена хотя бы одна строка
+                if rows_affected > 0 {
+                    // Успешное удаление
+                    (
+                        StatusCode::OK,
+                        Json(json!({
+                            "code": 200,
+                            "success": true,
+                            "message": "Data source deleted successfully",
+                            "rows_affected": rows_affected
+                        })),
+                    )
+                } else {
+                    // Запись с таким ID не найдена
+                    (
+                        StatusCode::NOT_FOUND,
+                        Json(json!({
+                            "code": 404,
+                            "success": false,
+                            "message": "Data source not found"
+                        })),
+                    )
+                }
+            }
+            Err(e) => {
+                // Обрабатываем ошибку выполнения запроса
+                eprintln!("{} {}", "❌ Failed to delete data source: ".color("Red"), e);
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(json!({
+                        "code": 500,
+                        "success": false,
+                        "message": "Failed to delete data source",
+                        "error": format!("{}", e)
+                    })),
+                )
+            }
+        }
+    }
+
+    pub async fn show(Path(id): Path<String>, State(state): State<AppState>) -> impl IntoResponse {
+        let conn = match state.database.get_pool_connection().await {
+            Ok(connection) => connection,
+            Err(e) => {
+                eprintln!("{} {}", "❌ Failed to get DB connection: ".color("Red"), e);
+                return (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(json!({
+                    "code": 500,
+                    "success": false,
+                    "message": "Database connection error",
+                    "error": format!("{}", e)
+                    })),
+                );
+            }
+        };
+
+        match conn.query_row(
+            "SELECT * FROM data_sources WHERE id = ? limit 1",
+            [&id],
+            |row| {
+                Ok(json!({
+                "id": row.get::<_, String>("id")?,
+                "name": row.get::<_, String>("name")?,
+                "url": row.get::<_, String>("url")?,
+                "created_at": row.get::<_, String>("created_at")?,
+                // Добавьте другие поля вашей таблицы
+            }))
+            },
+        ) {
+            Ok(data_source) => {
+                // Успешное получение данных
+                (StatusCode::OK,
+                Json(json!({
+                    "code": 200,
+                    "success": true,
+                    "message": "Data source found",
+                    "data_source": data_source
+                })))
+            },
+            Err(e) => {
+                eprintln!("{} {}", "❌ Failed to query row: ".color("Red"), e);
+                (StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!(
+                    {
+                        "code": 500,
+                        "success": false,
+                        "message": "Failed to query row",
+                        "error": format!("{}", e)
+                    }
+                )))
+            }
+        }
+    }
+
+pub async fn update() {}
 }

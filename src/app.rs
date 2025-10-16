@@ -1,8 +1,7 @@
 use std::path::PathBuf;
-use axum::{Router, routing::get, routing::post, response::IntoResponse, http::{StatusCode, Uri, HeaderMap, header}, middleware};
+use axum::{Router, routing::get, routing::post, response::IntoResponse, http::{StatusCode, Uri, HeaderMap, header}};
 use axum::routing::delete;
 use tower_http::services::ServeDir;
-use tower_http::trace::TraceLayer;
 
 // Import controllers
 use crate::controllers::api::api_controller::ApiController;
@@ -23,7 +22,8 @@ pub async fn create_app(
         .route("/api/indexes/{:uid}", get(IndexController::show))
         .route("/api/data-sources", get(DataSourceController::index))
         .route("/api/data-sources", post(DataSourceController::store))
-        // .route("/api/data-sources/{:id}", post(DataSourceController::destroy))
+        .route("/api/data-sources/{:id}", delete(DataSourceController::destroy))
+        .route("/api/data-sources/{:id}", get(DataSourceController::show))
 
         // Static resources for SvelteKit (JS, CSS, images)
         .nest_service("/_app", ServeDir::new(PathBuf::from("static/_app")))
