@@ -1,11 +1,6 @@
-// Импортируем необходимые модули из крейта rusqlite
 use rusqlite::{Connection, Result, params};
-// Импортируем макрос для обработки ошибок
-use anyhow::{Context, anyhow};
-use chrono::DateTime;
 use r2d2_sqlite::SqliteConnectionManager;
 use r2d2::Pool;
-use crate::db::user::User;
 
 
 
