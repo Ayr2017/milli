@@ -375,55 +375,78 @@ impl DataSourceController {
         let conn = match state.database.get_pool_connection().await {
             Ok(connection) => connection,
             Err(e) => {
-                eprintln!("{} {}", "❌ Failed to get DB connection: ".color("Red"), e),
+                eprintln!("{} {}", "❌ Failed to get DB connection: ".color("Red"), e);
                 return (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     Json(json!({
-                        "code": 500,
-                        "success": false,
-                        "message": "Database connection error",
-                        "error": format!("{}", e)
-                    })),
+                    "code": 500,
+                    "success": false,
+                    "message": "Database connection error",
+                    "error": format!("{}", e)
+                })),
                 );
             }
         };
 
         let id = payload.id;
 
-        // Пример 1: Получение записи по ID из таблицы users
-        let row = match conn.query_row("SELECT * FROM users WHERE id = $1", [id], |row| {
-            return Ok(row)
-        }).await
-        {
-            Ok(user) => {
-                (
-                    StatusCode::OK,
-                    Json(json!({
-                    "code": 200,
-                    "success": true,
-                    "message": "User found",
-                    "data": {
-                        "id": user.id,
-                        "name": user.name,
-                        "email": user.email
-                        // добавьте другие поля по необходимости
-                    }
-                })),
-                )
-            }
+        // Подготовка запроса
+        let mut stmt = match conn.prepare("SELECT id, name, email FROM users WHERE id = ?1") {
+            Ok(stmt) => stmt,
             Err(e) => {
-                eprintln!("{} {}", "❌ Failed to fetch user: ".color("Red"), e);
-                (
-                    StatusCode::NOT_FOUND,
+                eprintln!("{} {}", "❌ Failed to prepare statement: ".color("Red"), e);
+                return (
+                    StatusCode::INTERNAL_SERVER_ERROR,
                     Json(json!({
-                    "code": 404,
+                    "code": 500,
                     "success": false,
-                    "message": "User not found",
+                    "message": "Database statement preparation error",
                     "error": format!("{}", e)
                 })),
-                )
+                );
+            }
+        };
+
+        // Выполнение запроса
+        match stmt.query_row([id], |row| {
+            Ok((
+                row.get::<_, i64>("id")?,
+                row.get::<_, String>("name")?,
+                row.get::<_, String>("email")?,
+            ))
+        }) {
+            Ok((user_id, name, email)) => {
+                let response = json!({
+                "code": 200,
+                "success": true,
+                "message": "User found",
+                "data": {
+                    "id": user_id,
+                    "name": name,
+                    "email": email,
+                }
+            });
+                (StatusCode::OK, Json(response))
+            }
+            Err(rusqlite::Error::QueryReturnedNoRows) => {
+                let response = json!({
+                "code": 404,
+                "success": false,
+                "message": "User not found",
+                "error": format!("User with id {} not found", id)
+            });
+                (StatusCode::NOT_FOUND, Json(response))
+            }
+            Err(e) => {
+                eprintln!("{} {}", "❌ Database query error: ".color("Red"), e);
+                let response = json!({
+                "code": 500,
+                "success": false,
+                "message": "Database query error",
+                "error": format!("{}", e)
+            });
+                (StatusCode::INTERNAL_SERVER_ERROR, Json(response))
             }
         }
-
     }
 }

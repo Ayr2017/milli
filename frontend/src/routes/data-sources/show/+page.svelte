@@ -32,8 +32,19 @@
         prompt("Enter the document ID to add to the index:");
     }
 
-    function textConnection() {
-        console.log(dataSourceData)
+    async function textConnection() {
+        let testSource = await fetch(`/api/data-sources/test`,{
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                "id": dataSourceData.id,
+                "host": dataSourceData.host,
+                "database": dataSourceData.database
+        })}).then(response => response.json());
+
+        console.log(testSource)
     }
 </script>
 
