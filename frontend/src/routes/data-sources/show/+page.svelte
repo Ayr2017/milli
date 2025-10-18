@@ -1,13 +1,17 @@
 <script>
     import { Section } from "flowbite-svelte-blocks";
-    import { Button, Card,   P, Table, TableBody, TableBodyRow, TableBodyCell, Badge } from "flowbite-svelte";
+    import { Button, Toast, Card,   P, Table, TableBody, TableBodyRow, TableBodyCell, Badge } from "flowbite-svelte";
     import { onMount } from "svelte";
+    import { CheckCircleSolid } from "flowbite-svelte-icons";
+    import {slide} from "svelte/transition";
+
 
     let dataSourceData = null;
     let loading = true;
     let error = null;
 
     onMount(async () => {
+
         console.log("Section mounted");
         let params = new URLSearchParams(document.location.search);
         let id = params.get("id");
@@ -20,6 +24,8 @@
             const data = await response.json();
             console.log("Fetched data:", data);
             dataSourceData = data.data_source;
+            dsTestName = dataSourceData.host;
+
             console.log("Fetched data:", dataSourceData);
         } catch (err) {
             console.error("Error fetching index data:", err);
@@ -33,7 +39,7 @@
     }
 
     async function textConnection() {
-        let testSource = await fetch(`/api/data-sources/test`,{
+        let testSource = await fetch(`/api/data-sources/test`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -42,14 +48,34 @@
                 "id": dataSourceData.id,
                 "host": dataSourceData.host,
                 "database": dataSourceData.database
-        })}).then(response => response.json());
-
-        console.log(testSource)
+            })
+        }).then(response => {
+            if(response.status === 200){
+                testBtnColor = "green";
+                toastStatus = true;
+            } else {
+                testBtnColor = "red";
+            }
+            return response.json()
+        });
     }
+
+    let testBtnColor = "alternative";
+    let toastStatus = false;
+    let dsTestName = '';
 </script>
 
 <div class="mx-auto container my-2">
     <Section>
+
+        <Toast color="green" class="fixed top-4 right-4
+ z-500 outline" dismissable={!!dsTestName} transition={slide} bind:toastStatus>
+            {#snippet icon()}
+                <CheckCircleSolid class="h-5 w-5" />
+                <span class="sr-only">Check icon</span>
+            {/snippet}
+            Data source {dsTestName} checked successfully.
+        </Toast>
         {#if loading}
             <Card size="lg" class="p-4 text-left sm:p-8 md:p-10 w-full">
                 <P>Loading index information...</P>
@@ -126,7 +152,7 @@
                     <div class="mt-6">
                         <Button href="/data-sources" class="mr-2">Back</Button>
                         <Button color="alternative" href="/">Go Home</Button>
-                        <Button color="alternative" onclick="{()=>textConnection()}">Test connection</Button>
+                        <Button color="{testBtnColor}" onclick="{()=>textConnection()}">Test connection</Button>
                     </div>
                 </Card>
             </div>

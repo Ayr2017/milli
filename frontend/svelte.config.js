@@ -6,7 +6,6 @@ const config = {
 	preprocess: vitePreprocess(),
 	kit: {
 		adapter: adapter({
-			// Указываем правильную папку - static вместо build
 			pages: '../static',
 			assets: '../static',
 			fallback: 'index.html', // Для SPA режима можно установить 'index.html'

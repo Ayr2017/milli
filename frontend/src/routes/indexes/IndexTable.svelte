@@ -21,9 +21,6 @@
         setTimeout(function () {
             toastStatus = false;
             indexName = '';
-            console.log('Index removed');
-            console.log(toastStatus);
-            console.log(indexName);
         }, 5000);
     }
 

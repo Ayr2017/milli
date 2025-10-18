@@ -51,9 +51,6 @@
             console.log(error);
         });
     }
-
-
-
 </script>
 <Section class="py-4 sm:py-6 md:py-8">
     <CreateDataSourceModal />
