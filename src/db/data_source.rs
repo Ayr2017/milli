@@ -1,6 +1,7 @@
-use anyhow::Context;
-use rusqlite::{params, Connection};
+use anyhow::{Context, Result};
+use sqlx::{Pool, Sqlite, query, query_as, FromRow};
 
+#[derive(Debug, FromRow)]
 pub struct DataSource {
     pub id: u32,
     pub name: String,
@@ -17,52 +18,38 @@ pub struct DataSource {
 }
 
 impl DataSource {
-    pub fn store(&self, conn: Connection) -> rusqlite::Result<i32, anyhow::Error> {
-        let sql = "INSERT INTO data_sources (name, host, database, username, password, port, database_path, database_name, database_type, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)";
+    pub async fn store(&self, pool: &Pool<Sqlite>) -> Result<i32, anyhow::Error> {
+        let sql = "INSERT INTO data_sources (name, host, database, username, password, port, database_path, database_name, database_type, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        conn.execute(sql, params![
-            self.name,
-            self.host,
-            self.database, 
-            self.username,
-            self.password,
-            self.port,
-            self.database_path,
-            self.database_name,
-            self.database_type,
-            self.created_at,
-            self.updated_at
-        ])
+        let result = query(sql)
+            .bind(&self.name)
+            .bind(&self.host)
+            .bind(&self.database)
+            .bind(&self.username)
+            .bind(&self.password)
+            .bind(self.port)
+            .bind(&self.database_path)
+            .bind(&self.database_name)
+            .bind(&self.database_type)
+            .bind(&self.created_at)
+            .bind(&self.updated_at)
+            .execute(pool)
+            .await
             .context("Не удалось добавить источник данных".to_string())?;
 
-        let id = conn.last_insert_rowid() as i32;
+        let id = result.last_insert_rowid() as i32;
 
         println!("DataSource '{}' добавлен с ID: {}", self.name, id);
 
         Ok(id)
     }
-    
-    pub fn get_all_data_sources(&self, conn: Connection) -> rusqlite::Result<Vec<DataSource>, anyhow::Error> {
-        let mut stmt = conn.prepare("SELECT * FROM data_sources")?;
-        
-        let data_iter = stmt.query_map(params![], |row| {
-            Ok(DataSource {
-                id: row.get(0).unwrap(),
-                name: row.get(1).unwrap(),
-                host: row.get(2).unwrap(),
-                database: row.get(3).unwrap(),
-                username: row.get(4).unwrap(),
-                password: row.get(5).unwrap(),
-                port: row.get(6).unwrap(),
-                database_path: row.get(7).unwrap(),
-                database_name: row.get(8).unwrap(),
-                database_type: row.get(9).unwrap(),
-                created_at: row.get(10).unwrap(),
-                updated_at: row.get(11).unwrap(),
-            })
-        }).context("Не удалось получить список источников данных".to_string())?;
-        
-        Ok(data_iter.map(|r| r.unwrap()).collect())
+
+    pub async fn get_all_data_sources(&self, pool: &Pool<Sqlite>) -> Result<Vec<DataSource>, anyhow::Error> {
+        let data_sources = query_as::<_, DataSource>("SELECT * FROM data_sources")
+            .fetch_all(pool)
+            .await
+            .context("Не удалось получить список источников данных".to_string())?;
+
+        Ok(data_sources)
     }
-        
 }

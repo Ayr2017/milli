@@ -1,3 +1,6 @@
+use sqlx::FromRow;
+
+#[derive(Debug, FromRow)]
 pub struct DataSource {
     pub name: String,
     pub host: String,

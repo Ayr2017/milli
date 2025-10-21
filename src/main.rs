@@ -14,18 +14,19 @@ mod database;
 mod db;
 mod services;
 mod models;
+mod repositories;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Инициализация логирования
     tracing_subscriber::fmt::init();
-    
+
     initialize_and_run_server().await
 }
 
 async fn initialize_and_run_server() -> Result<(), Box<dyn std::error::Error>> {
     let config = ApplicationConfig::new().await.expect("Failed to load config");
-    let database = Database::new(&config.db_path)?;
+    let database = Database::new(&config.db_path).await?;
     let state = AppState::new(config, database).await?;
     let app = app::create_app(state).await;
 

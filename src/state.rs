@@ -32,7 +32,7 @@ impl AppState {
 
     /// Создает состояние приложения только с конфигурацией (для тестирования)
     #[cfg(test)]
-    pub fn new_without_database(config: ApplicationConfig) -> Result<Self, anyhow::Error> {
+    pub async fn new_without_database(config: ApplicationConfig) -> Result<Self, anyhow::Error> {
         let meilisearch_client = Arc::new(
             Client::new(
                 config.get_meilisearch_url(),
@@ -41,7 +41,7 @@ impl AppState {
         );
 
         // Создаем временную базу данных в памяти для тестов
-        let temp_db = Database::new(":memory:")?;
+        let temp_db = Database::new(":memory:").await?;
 
         Ok(Self {
             config: Arc::new(config),
