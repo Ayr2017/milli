@@ -29,6 +29,7 @@ impl Database {
         )
         .execute(&self.pool)
         .await?;
+        
 
         // Create data_sources table
         query(
@@ -49,6 +50,12 @@ impl Database {
         )
         .execute(&self.pool)
         .await?;
+
+        query(
+            "CREATE TABLE IF NOT EXISTS index_data_queries (id INTEGER PRIMARY KEY, data_source_id int, index_uid TEXT, query TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT NOT NULL DEFAULT (datetime('now')))"
+        )
+            .execute(&self.pool)
+            .await?;
 
         Ok(())
     }

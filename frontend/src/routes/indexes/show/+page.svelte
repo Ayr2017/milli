@@ -1,11 +1,19 @@
 <script>
     import { Section } from "flowbite-svelte-blocks";
-    import { Button, Card, Label,  P, Table, TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Badge } from "flowbite-svelte";
+    import { Textarea, Button, Card, Label,  P, Table, TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Badge } from "flowbite-svelte";
     import { onMount } from "svelte";
 
     let indexData = null;
     let loading = true;
     let error = null;
+
+    let textareaprops = {
+        id: "message",
+        name: "message",
+        label: "Your message",
+        rows: 10,
+        placeholder: "Leave a comment..."
+    };
 
     onMount(async () => {
         console.log("Section mounted");
@@ -27,9 +35,14 @@
             loading = false;
         }
     });
+
+    function testQuery(){
+        fetch("/api/indexes/" + indexData.uid + "/query", {
+    })}
     function addDocuments(){
         prompt("Enter the document ID to add to the index:");
     }
+
 </script>
 
 <div class="mx-auto container my-2">
@@ -85,9 +98,17 @@
                                     {/if}
                                 </TableBodyCell>
                             </TableBodyRow>
+                            <TableBodyRow>
+                                <TableBodyCell class="font-medium">Data query</TableBodyCell>
+                                <TableBodyCell>
+                                    <Textarea {...textareaprops} class="w-full" />
+                                    <Button color="blue" class="ml-2" onclick="{testQuery}">Add documents</Button>
+                                </TableBodyCell>
+                            </TableBodyRow>
                         </TableBody>
                     </Table>
                 </div>
+
             </Card>
 
             <Card size="lg" class="p-4 text-left sm:p-8 md:p-10 w-full">
