@@ -18,8 +18,24 @@ services:
     networks:
       - meilisearch_network
 
+  postgres:
+    image: postgres:latest
+    container_name: postgres_test
+    restart: unless-stopped
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=testdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - meilisearch_network
+
 volumes:
   meilisearch_data:
+  postgres_data:
 
 networks:
   meilisearch_network:
