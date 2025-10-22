@@ -2,10 +2,13 @@
     import { Section } from "flowbite-svelte-blocks";
     import { Textarea, Button, Card, Label,  P, Table, TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Badge } from "flowbite-svelte";
     import { onMount } from "svelte";
+    import IndexDataSourceModal from "./IndexDataSourceModal.svelte";
 
     let indexData = null;
     let loading = true;
     let error = null;
+    let indexDataSources = null;
+    let indexUid = '';
 
     let textareaprops = {
         id: "message",
@@ -19,6 +22,7 @@
         console.log("Section mounted");
         let params = new URLSearchParams(document.location.search);
         let uid = params.get("uid");
+        indexUid = uid;
 
         try {
             const response = await fetch(`/api/indexes/${uid}`);
@@ -28,6 +32,7 @@
             const data = await response.json();
             console.log("Fetched data:", data);
             indexData = data;
+            getIndexDataQueries(uid);
         } catch (err) {
             console.error("Error fetching index data:", err);
             error = err.message;
@@ -36,9 +41,22 @@
         }
     });
 
-    function testQuery(){
-        fetch("/api/indexes/" + indexData.uid + "/query", {
-    })}
+    function getIndexDataQueries(uid){
+        indexDataSources = fetch(`/api/index-data-queries?filter[index_uid]=${uid}&filter[limit]=1000`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => {
+            if (!response.ok) {
+                console.log("Error fetching index data:", err);
+                return null;
+            } else {
+                return response.json();
+            }
+        });
+    }
+
     function addDocuments(){
         prompt("Enter the document ID to add to the index:");
     }
@@ -98,14 +116,25 @@
                                     {/if}
                                 </TableBodyCell>
                             </TableBodyRow>
+                        </TableBody>
+                        <TableBody>
                             <TableBodyRow>
-                                <TableBodyCell class="font-medium">Data query</TableBodyCell>
-                                <TableBodyCell>
-                                    <Textarea {...textareaprops} class="w-full" />
-                                    <Button color="blue" class="ml-2" onclick="{testQuery}">Add documents</Button>
-                                </TableBodyCell>
+                                <TableBodyCell class="font-medium">Index Name</TableBodyCell>
+                            </TableBodyRow>
+                            <TableBodyRow>
+                                <TableBodyCell class="font-medium">Index Type</TableBodyCell>
+                            </TableBodyRow>
+                            <TableBodyRow>
+                                <TableBodyCell></TableBodyCell>
                             </TableBodyRow>
                         </TableBody>
+                        <tfoot>
+                        <tr class="font-semibold text-gray-900 dark:text-white">
+                            <th scope="row" class="px-6 py-3 text-base">
+                                <IndexDataSourceModal indexUid={indexUid}/>
+                            </th>
+                        </tr>
+                        </tfoot>
                     </Table>
                 </div>
 
