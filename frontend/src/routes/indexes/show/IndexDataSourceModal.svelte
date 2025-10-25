@@ -1,5 +1,6 @@
 <script lang="ts">
-    import {Textarea, Button, Modal, Label,P, Input, Checkbox } from "flowbite-svelte";
+    import {Textarea, Button, Modal, Label,P,Select, Input, Checkbox } from "flowbite-svelte";
+    import {onMount} from "svelte";
 
     const { indexUid } = $props();
 
@@ -14,7 +15,15 @@
     let formModal = $state(false);
     let error = $state("");
     let testResult = $state("");
-    
+    let dataSources = $state([]);
+
+    onMount(() => {
+        fetch("/api/data-sources")
+            .then((res) => res.json())
+            .then((res) => {
+                dataSources = res.data_sources;
+            });
+    });
 
     function onaction({ action, data }: { action: string; data: FormData }) {
         error = "";
@@ -26,8 +35,7 @@
     }
 
     function testQuery() {
-        fetch(`/api/index-data-queries/test?uid=${indexUid}&query={query}`)
-
+        fetch(`/api/index-data-queries/test?uid=${indexUid}&query=${query}`)
     }
 </script>
 
@@ -39,12 +47,22 @@
         {#if error}
             <Label color="red">{error}</Label>
         {/if}
+
+        <Label class="space-y-2">
+            <span>Data Source</span>
+            <Select>
+                {#each dataSources as ds}
+                    <option value={ds.uid}>{ds.name}</option>
+                {/each}
+            </Select>
+        </Label>
+
         <Label class="space-y-2">
             <span>Query</span>
             <Textarea {...textareaprops} class="w-full" required bind:value={query} />
         </Label>
-        <Button type="submit" value="login">Save</Button>
-        <Button onclick={()=>testQuery()} type="button" color="blue" value="login">Test query</Button>
+        <Button type="submit" value="login" class="cursor-pointer">Save</Button>
+        <Button onclick={()=>testQuery()} type="button" color="blue" class="cursor-pointer">Test query</Button>
         <P>{testResult}</P>
     </div>
 </Modal>

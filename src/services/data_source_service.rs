@@ -1,13 +1,8 @@
 use anyhow::Error;
-use axum::extract::State;
-use axum::http::StatusCode;
-use axum::Json;
 use colored::Colorize;
 use sqlx::{Pool, Sqlite, query_as, postgres::PgPoolOptions};
-use serde_json::json;
 use crate::models::data_source::DataSource;
 use crate::requests::data_source::test_data_source_request::TestDataSourceRequest;
-use crate::state::AppState;
 
 pub struct DataSourceService {
     pub pool: Pool<Sqlite>,

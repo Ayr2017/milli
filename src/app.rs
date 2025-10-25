@@ -7,6 +7,7 @@ use tower_http::services::ServeDir;
 use crate::controllers::api::api_controller::ApiController;
 use crate::controllers::api::index_controller::IndexController;
 use crate::controllers::api::data_source_controller::DataSourceController;
+use crate::controllers::api::index_data_query_controller::IndexDataQueryController;
 use crate::state::AppState;
 
 pub async fn create_app(
@@ -25,6 +26,8 @@ pub async fn create_app(
         .route("/api/data-sources/test", post(DataSourceController::test))
         .route("/api/data-sources/{:id}", delete(DataSourceController::destroy))
         .route("/api/data-sources/{:id}", get(DataSourceController::show))
+        .route("/api/index-data-queries", get(IndexDataQueryController::index))
+        .route("/api/index-data-queries/test", get(IndexDataQueryController::test))
 
         // Static resources for SvelteKit (JS, CSS, images)
         .nest_service("/_app", ServeDir::new(PathBuf::from("static/_app")))

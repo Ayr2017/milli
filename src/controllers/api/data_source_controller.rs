@@ -5,11 +5,9 @@ use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use colored::Colorize;
-use sqlx::{Pool, Sqlite, query, query_as, FromRow};
+use sqlx::{query, query_as};
 use serde_json::json;
-use crate::models::data_source::DataSource;
 use crate::requests::data_source::test_data_source_request::TestDataSourceRequest;
-use crate::services::data_source_service;
 use crate::services::data_source_service::DataSourceService;
 
 pub struct DataSourceController {}

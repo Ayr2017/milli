@@ -42,14 +42,15 @@
     });
 
     function getIndexDataQueries(uid){
-        indexDataSources = fetch(`/api/index-data-queries?filter[index_uid]=${uid}&filter[limit]=1000`, {
+        indexDataSources = fetch(`/api/index-data-queries?filter[index_uid]=${uid}&limit=1000`, {
             method: "GET",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Accept": "application/json",
             }
         }).then(response => {
             if (!response.ok) {
-                console.log("Error fetching index data:", err);
+                console.log("Error fetching index data:", response);
                 return null;
             } else {
                 return response.json();
