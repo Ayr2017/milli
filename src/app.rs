@@ -7,7 +7,7 @@ use tower_http::services::ServeDir;
 use crate::controllers::api::api_controller::ApiController;
 use crate::controllers::api::index_controller::IndexController;
 use crate::controllers::api::data_source_controller::DataSourceController;
-use crate::controllers::api::index_data_query_controller::IndexDataQueryController;
+use crate::presentation::controllers::api::v1::index_data_query_controller::IndexDataQueryController;
 use crate::state::AppState;
 
 pub async fn create_app(
