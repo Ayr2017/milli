@@ -15,6 +15,9 @@ mod db;
 mod services;
 mod models;
 mod repositories;
+mod application;
+mod presentation;
+mod domain;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
