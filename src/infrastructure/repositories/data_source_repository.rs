@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use colored::Colorize;
 use sqlx::{Executor, Row};
 use crate::database::Database;
 use crate::domain::data_source::entities::data_source::DataSource;
@@ -21,10 +22,17 @@ impl DataSourceRepositoryTrait for DataSourceRepository {
         Self: Sized,
     {
         let connection = self.db.get_pool_connection().await.unwrap();
-        let result = sqlx::query("SELECT * FROM data_source WHERE id = $1")
+        println!("get data_source by id: {}", id.to_string().blue());
+        let result = sqlx::query("SELECT * FROM data_sources WHERE id = $1")
             .bind(id)
             .fetch_one(connection)
             .await;
+        
+        match &result {
+            Ok(_) => println!("Query result: Ok"),
+            Err(e) => println!("Query result: Err({:?})", e),
+        }
+
 
         match result {
             Ok(row) => {

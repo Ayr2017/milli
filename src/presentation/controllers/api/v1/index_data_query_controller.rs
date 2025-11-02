@@ -34,6 +34,7 @@ impl IndexDataQueryController {
                     "code": 200,
                     "success": true,
                     "message": "Database connection error",
+                     "result": format!("{:?}", result.await),
                     "data": format!("{:?}", payload)
                     })),
         )
