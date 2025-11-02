@@ -19,6 +19,8 @@ mod application;
 mod presentation;
 mod domain;
 
+mod infrastructure;
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Инициализация логирования

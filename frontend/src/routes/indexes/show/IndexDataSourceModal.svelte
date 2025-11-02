@@ -16,6 +16,7 @@
     let error = $state("");
     let testResult = $state("");
     let dataSources = $state([]);
+    let dataSourceId = $state("");
 
     onMount(() => {
         fetch("/api/data-sources")
@@ -35,7 +36,12 @@
     }
 
     function testQuery() {
-        fetch(`/api/index-data-queries/test?uid=${indexUid}&query=${query}`)
+        fetch(`/api/index-data-queries/test?uid=${indexUid}&data_source_id=${dataSourceId}&query=${query}`)
+        .then((res) => res.json())
+        .then((res) => {
+            testResult = res.result;
+            console.log(res.result);
+            })
     }
 </script>
 
@@ -50,9 +56,9 @@
 
         <Label class="space-y-2">
             <span>Data Source</span>
-            <Select>
+            <Select required bind:value={dataSourceId} class="w-full">
                 {#each dataSources as ds}
-                    <option value={ds.uid}>{ds.name}</option>
+                    <option value={ds.id}>{ds.name}</option>
                 {/each}
             </Select>
         </Label>
