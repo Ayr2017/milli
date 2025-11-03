@@ -35,7 +35,7 @@ impl IndexDataQueryController {
                 "success": true,
                 "message": "Query executed successfully",
                 "result": json_value, // Вместо format!("{:?}", result)
-                "data": format!("{:?}", payload)
+                "data": format!("{:?}", payload.0)
             })),
             ),
             Err(error_msg) => (
