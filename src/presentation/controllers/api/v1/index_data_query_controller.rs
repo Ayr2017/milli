@@ -25,19 +25,31 @@ impl IndexDataQueryController {
         let repository = DataSourceRepository::new(db);
         let test_index_data_query_use_case = TestIndexDataQueryUseCase::new(repository);
 
-        let result = test_index_data_query_use_case.execute(&payload);
-        
-        println!("{:?}", payload);
-        (
-            StatusCode::OK,
-            Json(json!({
-                    "code": 200,
-                    "success": true,
-                    "message": "Database connection error",
-                     "result": format!("{:?}", result.await),
-                    "data": format!("{:?}", payload)
-                    })),
-        )
+        let result = test_index_data_query_use_case.execute(&payload).await;
+
+        match result {
+            Ok(json_value) => (
+                StatusCode::OK,
+                Json(json!({
+                "code": 200,
+                "success": true,
+                "message": "Query executed successfully",
+                "result": json_value, // Вместо format!("{:?}", result)
+                "data": format!("{:?}", payload)
+            })),
+            ),
+            Err(error_msg) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({
+                "code": 500,
+                "success": false,
+                "message": error_msg,
+                "result": null,
+                "data": format!("{:?}", payload)
+            })),
+            )
+        }
+
     }
 
     pub async fn index(

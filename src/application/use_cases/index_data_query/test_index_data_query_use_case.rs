@@ -5,7 +5,7 @@ use crate::requests::index_data_query::test_index_data_query_request::TestIndexD
 use serde_json::Value;
 use sqlx::postgres::PgPool;
 use sqlx::postgres::PgRow;
-use sqlx::{Column, Executor, Row};
+use sqlx::{Column, Executor, Row, TypeInfo};
 
 pub struct TestIndexDataQueryUseCase<R: DataSourceRepositoryTrait> {
     repo: R,
@@ -20,9 +20,14 @@ impl<R: DataSourceRepositoryTrait> TestIndexDataQueryUseCase<R> {
         let data_source_id = payload.data_source_id;
         let data_source = self.repo.get(data_source_id).await.ok_or("Data source not found".to_string())?;
         let result = self.execute_query(&data_source, &payload.query).await;
-        println!("{:?}", result);
+        let data = match &result {
+            Ok(json) => println!("{}", serde_json::to_string_pretty(json).unwrap_or_else(|_| "Failed to serialize".to_string())),
+            Err(e) => println!("Error: {}", e),
+        };
+
+        println!("{:?}", data);
         println!("{:?}", payload);
-        return result;
+        result
     }
 
     async fn execute_query(
@@ -67,11 +72,56 @@ impl<R: DataSourceRepositoryTrait> TestIndexDataQueryUseCase<R> {
 
         for column in row.columns() {
             let column_name = column.name();
-            let value = match row.try_get::<Option<String>, _>(column_name) {
-                Ok(Some(val)) => serde_json::Value::String(val),
-                Ok(None) => serde_json::Value::Null,
-                Err(_) => serde_json::Value::Null,
+            let type_info = column.type_info();
+            
+            let value = match type_info.name() {
+                "INT2" => {
+                    match row.try_get::<Option<i16>, _>(column_name) {
+                        Ok(Some(val)) => serde_json::Value::Number((val as u32).into()),
+                        Ok(None) => serde_json::Value::Null,
+                        Err(_) => serde_json::Value::Null,
+                    }
+                },
+                "INT4" => {
+                    match row.try_get::<Option<i32>, _>(column_name) {
+                        Ok(Some(val)) => serde_json::Value::Number((val as u32).into()),
+                        Ok(None) => serde_json::Value::Null,
+                        Err(_) => serde_json::Value::Null,
+                    }
+                },
+                "INT8" => {
+                    match row.try_get::<Option<i64>, _>(column_name) {
+                        Ok(Some(val)) => serde_json::Value::Number((val as u64).into()),
+                        Ok(None) => serde_json::Value::Null,
+                        Err(_) => serde_json::Value::Null,
+                    }
+                },
+                "FLOAT4" | "FLOAT8" | "NUMERIC" => {
+                    match row.try_get::<Option<f64>, _>(column_name) {
+                        Ok(Some(val)) => serde_json::Value::Number(
+                            serde_json::Number::from_f64(val).unwrap_or(serde_json::Number::from(0))
+                        ),
+                        Ok(None) => serde_json::Value::Null,
+                        Err(_) => serde_json::Value::Null,
+                    }
+                },
+                "BOOL" => {
+                    match row.try_get::<Option<bool>, _>(column_name) {
+                        Ok(Some(val)) => serde_json::Value::Bool(val),
+                        Ok(None) => serde_json::Value::Null,
+                        Err(_) => serde_json::Value::Null,
+                    }
+                },
+                _ => {
+                    // Для всех остальных типов пытаемся получить как строку
+                    match row.try_get::<Option<String>, _>(column_name) {
+                        Ok(Some(val)) => serde_json::Value::String(val),
+                        Ok(None) => serde_json::Value::Null,
+                        Err(_) => serde_json::Value::Null,
+                    }
+                }
             };
+            
             json_map.insert(column_name.to_string(), value);
         }
 
