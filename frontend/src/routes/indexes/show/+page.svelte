@@ -134,6 +134,9 @@
                             <th scope="row" class="px-6 py-3 text-base">
                                 <IndexDataSourceModal indexUid={indexUid}/>
                             </th>
+                            <th class="font-semibold text-gray-900 dark:text-white">
+                                <Button color="blue" class="mr-2" onclick="{addDocuments}">Check</Button>
+                            </th>
                         </tr>
                         </tfoot>
                     </Table>
