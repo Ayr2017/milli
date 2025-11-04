@@ -1,8 +1,8 @@
 <script lang="ts">
-    import {Textarea, Button, Modal, Label,P,Select, Input, Checkbox } from "flowbite-svelte";
+    import {Textarea, Button, Modal, Label, P, Select, Input, Checkbox} from "flowbite-svelte";
     import {onMount} from "svelte";
 
-    const { indexUid } = $props();
+    const {indexUid} = $props();
 
     let textareaprops = {
         id: "query",
@@ -26,7 +26,7 @@
             });
     });
 
-    function onaction({ action, data }: { action: string; data: FormData }) {
+    function onaction({action, data}: { action: string; data: FormData }) {
         error = "";
         // Check the data validity, return false to prevent dialog closing; anything else to proceed
         if (action === "login" && (data.get("password") as string)?.length < 4) {
@@ -37,11 +37,41 @@
 
     function testQuery() {
         fetch(`/api/index-data-queries/test?uid=${indexUid}&data_source_id=${dataSourceId}&query=${query}`)
-        .then((res) => res.json())
-        .then((res) => {
-            testResult = res.result;
-            console.log(res.result);
+            .then((res) => {
+                if (res.ok) {
+                    return res.json()
+                } else {
+                    console.error(res);
+                }
             })
+            .then((res) => {
+                testResult = JSON.stringify(res.result, null, 2);
+                console.log(testResult);
+            })
+    }
+
+    function save() {
+        fetch(`/api/index-data-queries`,{
+            method: "POST",
+            body: JSON.stringify({
+                index_uid: indexUid,
+                data_source_id: dataSourceId,
+                query: query,
+            }),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        }).then((res) => {
+            if (res.ok) {
+                formModal = false;
+                query = "";
+                dataSourceId = "";
+                testResult = "";
+                error = "";
+            } else {
+                console.error(res);
+            }
+        })
     }
 </script>
 
@@ -65,10 +95,11 @@
 
         <Label class="space-y-2">
             <span>Query</span>
-            <Textarea {...textareaprops} class="w-full" required bind:value={query} />
+            <Textarea {...textareaprops} class="w-full" required bind:value={query}/>
         </Label>
-        <Button type="submit" value="login" class="cursor-pointer">Save</Button>
+        <Button onclick={()=>save()} type="button" value="save" class="cursor-pointer">Save</Button>
         <Button onclick={()=>testQuery()} type="button" color="blue" class="cursor-pointer">Test query</Button>
-        <P>{testResult}</P>
+        <pre><code class="language-json text-sm leading-relaxed">{testResult}</code>
+        </pre>
     </div>
 </Modal>

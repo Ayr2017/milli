@@ -3,6 +3,7 @@ use axum::{Router, routing::get, routing::post, response::IntoResponse, http::{S
 use axum::routing::delete;
 use tower_http::services::ServeDir;
 
+
 // Import controllers
 use crate::controllers::api::api_controller::ApiController;
 use crate::controllers::api::index_controller::IndexController;
@@ -28,6 +29,7 @@ pub async fn create_app(
         .route("/api/data-sources/{:id}", get(DataSourceController::show))
         .route("/api/index-data-queries", get(IndexDataQueryController::index))
         .route("/api/index-data-queries/test", get(IndexDataQueryController::test))
+        .route("/api/index-data-queries", post(IndexDataQueryController::store))
 
         // Static resources for SvelteKit (JS, CSS, images)
         .nest_service("/_app", ServeDir::new(PathBuf::from("static/_app")))

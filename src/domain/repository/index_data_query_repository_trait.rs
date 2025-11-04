@@ -1,14 +1,14 @@
 use crate::database::Database;
 use std::sync::Arc;
 use anyhow::Error;
-use crate::domain::data_source::entities::data_source::DataSource;
-use crate::requests::data_source::store_data_source_request::StoreDataSourceRequest;
+use crate::domain::data_source::entities::index_data_query::IndexDataQuery;
+use crate::presentation::requests::index_data_query::store_index_data_query_request::StoreIndexDataQueryRequest;
 
-pub trait DataSourceRepositoryTrait {
+pub trait IndexDataQueryRepositoryTrait {
     fn new(db:Database) -> Self;
-    async fn get(&self, id: u32) -> Option<DataSource>;
+    async fn get(&self, id: u32) -> Option<IndexDataQuery>;
     fn all(&self) -> Vec<Self> where Self: Sized;
-    async fn store(&self, data: StoreDataSourceRequest) -> Option<DataSource>;
+    async fn store(&self, data: &StoreIndexDataQueryRequest) -> Option<IndexDataQuery>;
     fn update(&self, id: i32, data: Self) -> Option<Self> where Self: Sized;
     fn delete(&self, id: i32) -> Option<Self> where Self: Sized;
     fn delete_all(&self) -> Vec<Self> where Self: Sized;

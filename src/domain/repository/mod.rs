@@ -1,1 +1,2 @@
 pub mod data_source_repository_trait;
+pub mod index_data_query_repository_trait;

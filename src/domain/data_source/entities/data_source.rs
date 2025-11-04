@@ -2,6 +2,7 @@ use crate::domain::data_source::errors::data_source_error::DataSourceError;
 
 #[derive(Debug, Clone)]
 pub struct DataSource {
+    pub id: u32,
     pub name: String,
     pub host: String,
     pub database: String,
@@ -28,6 +29,7 @@ impl DataSource {
     ) -> Result<Self, DataSourceError> {
 
         Ok(Self {
+            id: 0u32,
             name,
             host,
             database,
