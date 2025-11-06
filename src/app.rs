@@ -30,6 +30,7 @@ pub async fn create_app(
         .route("/api/index-data-queries", get(IndexDataQueryController::index))
         .route("/api/index-data-queries/test", get(IndexDataQueryController::test))
         .route("/api/index-data-queries", post(IndexDataQueryController::store))
+        .route("/api/index-data-queries/insert-data", post(IndexDataQueryController::insert_data))
 
         // Static resources for SvelteKit (JS, CSS, images)
         .nest_service("/_app", ServeDir::new(PathBuf::from("static/_app")))

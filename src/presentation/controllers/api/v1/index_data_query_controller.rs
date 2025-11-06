@@ -4,6 +4,7 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use serde_json::json;
 use crate::application::use_cases::index_data_query::get_index_data_queries_use_case::{GetIndexDataQueriesUseCase};
+use crate::application::use_cases::index_data_query::insert_data_index_data_query_request_use_case::InsertDataIndexDataQueryRequestUseCase;
 use crate::application::use_cases::index_data_query::test_index_data_query_use_case::TestIndexDataQueryUseCase;
 use crate::application::use_cases::index_data_query::store_index_data_query_request_use_case::StoreIndexDataQueryRequestUseCase;
 use crate::domain::data_source::entities::index_data_query::IndexDataQuery;
@@ -124,5 +125,22 @@ impl IndexDataQueryController {
             })),
             )
         }
+    }
+    
+    pub async fn insert_data(
+        State(state): State<AppState>,
+        Json(payload): Json<StoreIndexDataQueryRequest>,
+    )->impl IntoResponse {
+        println!("{:?}", payload);
+        let db = (*state.database).clone();
+        let repository = IndexDataQueryRepository::new(db);
+        let use_case = InsertDataIndexDataQueryRequestUseCase::new(repository).await;
+        Json(json!({
+        "code": 200,
+        "success": true,
+        "message": "Data inserted successfully",
+        "data": payload
+    }))
+
     }
 }

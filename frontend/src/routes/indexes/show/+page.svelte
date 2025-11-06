@@ -8,7 +8,7 @@
     let indexData = null;
     let loading = true;
     let error = null;
-    let indexDataQueries = null;
+    let indexDataQueries = [];
     let indexUid = '';
 
     let textareaprops = {
@@ -33,7 +33,7 @@
             const data = await response.json();
             console.log("Fetched data:", data);
             indexData = data;
-            getIndexDataQueries(uid);
+            await getIndexDataQueries(uid);
         } catch (err) {
             console.error("Error fetching index data:", err);
             error = err.message;
@@ -42,8 +42,8 @@
         }
     });
 
-    function getIndexDataQueries(uid){
-        indexDataQueries = fetch(`/api/index-data-queries?filter[index_uid]=${uid}&limit=1000`, {
+    async function getIndexDataQueries(uid){
+        indexDataQueries = await fetch(`/api/index-data-queries?filter[index_uid]=${uid}&limit=1000`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -51,14 +51,12 @@
             }
         }).then(response => {
             if (!response.ok) {
-                console.log("Error fetching index data:", response);
                 return null;
             } else {
                 return response.json();
             }
         }).then((response)=>{
-            console.log("Fetched index data:", response);
-            return response;
+            return response.data;
         });
     }
 
@@ -134,7 +132,7 @@
                             </TableBodyRow>
                         </TableBody>
                         <tfoot>
-                        <IndexQuery indexQuery="Lorem ipsum"></IndexQuery>
+                        <IndexQuery indexDataQueries="{indexDataQueries}"></IndexQuery>
 
                         <tr class="font-semibold text-gray-900 dark:text-white">
                             <th scope="row" class="px-6 py-3 text-base">
