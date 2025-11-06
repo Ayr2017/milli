@@ -3,11 +3,12 @@
     import { Textarea, Button, Card, Label,  P, Table, TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Badge } from "flowbite-svelte";
     import { onMount } from "svelte";
     import IndexDataSourceModal from "./IndexDataSourceModal.svelte";
+    import IndexQuery from "./IndexQuery.svelte";
 
     let indexData = null;
     let loading = true;
     let error = null;
-    let indexDataSources = null;
+    let indexDataQueries = null;
     let indexUid = '';
 
     let textareaprops = {
@@ -42,7 +43,7 @@
     });
 
     function getIndexDataQueries(uid){
-        indexDataSources = fetch(`/api/index-data-queries?filter[index_uid]=${uid}&limit=1000`, {
+        indexDataQueries = fetch(`/api/index-data-queries?filter[index_uid]=${uid}&limit=1000`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -55,6 +56,9 @@
             } else {
                 return response.json();
             }
+        }).then((response)=>{
+            console.log("Fetched index data:", response);
+            return response;
         });
     }
 
@@ -130,6 +134,8 @@
                             </TableBodyRow>
                         </TableBody>
                         <tfoot>
+                        <IndexQuery indexQuery="Lorem ipsum"></IndexQuery>
+
                         <tr class="font-semibold text-gray-900 dark:text-white">
                             <th scope="row" class="px-6 py-3 text-base">
                                 <IndexDataSourceModal indexUid={indexUid}/>

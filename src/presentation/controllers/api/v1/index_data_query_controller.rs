@@ -3,8 +3,10 @@ use axum::extract::{Json, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use serde_json::json;
+use crate::application::use_cases::index_data_query::get_index_data_queries_use_case::{GetIndexDataQueriesUseCase};
 use crate::application::use_cases::index_data_query::test_index_data_query_use_case::TestIndexDataQueryUseCase;
 use crate::application::use_cases::index_data_query::store_index_data_query_request_use_case::StoreIndexDataQueryRequestUseCase;
+use crate::domain::data_source::entities::index_data_query::IndexDataQuery;
 use crate::domain::repository::data_source_repository_trait::DataSourceRepositoryTrait;
 use crate::domain::repository::index_data_query_repository_trait::IndexDataQueryRepositoryTrait;
 use crate::requests::index_data_query::index_index_data_query_request::IndexIndexDataQueryRequest;
@@ -12,6 +14,7 @@ use crate::requests::index_data_query::test_index_data_query_request::TestIndexD
 use crate::presentation::requests::index_data_query::store_index_data_query_request::StoreIndexDataQueryRequest;
 use crate::infrastructure::repositories::data_source_repository::DataSourceRepository;
 use crate::infrastructure::repositories::index_data_query_repository::IndexDataQueryRepository;
+use crate::presentation::requests::index_data_query::get_index_data_query_request_dto::GetIndexDataQueryRequest;
 use crate::state::AppState;
 
 pub struct IndexDataQueryController {}
@@ -57,17 +60,34 @@ impl IndexDataQueryController {
 
     pub async fn index(
         Query(params): Query<IndexIndexDataQueryRequest>,
+        State(state): State<AppState>
     ) -> impl IntoResponse{
+        let db = (*state.database).clone();
+        let repository = IndexDataQueryRepository::new(db);
+        let use_case = GetIndexDataQueriesUseCase::new(repository);
+        let result = use_case.execute(&params).await;
         println!("{:?}", params);
-        (
-            StatusCode::OK,
-            Json(json!({
-                    "code": 200,
-                    "success": true,
-                    "message": "Database connection error",
-                    "data": format!("{:?}", params)
-                    })),
-        )
+        match result {
+            Ok(index_data_queries) => (
+                StatusCode::OK,
+                Json(json!({
+                "code": 200,
+                "success": true,
+                "message": "Index data queries retrieved successfully",
+                "data": index_data_queries // Прямо передаём Vec<IndexDataQuery>
+            })),
+            ),
+            Err(error_msg) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({
+                "code": 500,
+                "success": false,
+                "message": error_msg,
+                "data": null
+            })),
+            )
+        }
+
     }
 
     // #[debug_handler]

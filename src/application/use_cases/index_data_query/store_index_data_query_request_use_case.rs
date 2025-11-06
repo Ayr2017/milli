@@ -1,8 +1,4 @@
-use std::sync::Arc;
 use anyhow::Error;
-use axum::extract::Query;
-use crate::database::Database;
-use crate::domain::repository::data_source_repository_trait::DataSourceRepositoryTrait;
 use crate::domain::repository::index_data_query_repository_trait::IndexDataQueryRepositoryTrait;
 use crate::presentation::requests::index_data_query::store_index_data_query_request::StoreIndexDataQueryRequest;
 

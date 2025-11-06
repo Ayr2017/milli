@@ -1,1 +1,2 @@
 pub mod store_index_data_query_request;
+pub mod get_index_data_query_request_dto;
