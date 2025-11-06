@@ -1,6 +1,4 @@
 use crate::database::Database;
-use std::sync::Arc;
-use anyhow::Error;
 use crate::domain::data_source::entities::index_data_query::IndexDataQuery;
 use crate::presentation::requests::index_data_query::store_index_data_query_request::StoreIndexDataQueryRequest;
 

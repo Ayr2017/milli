@@ -16,6 +16,7 @@ use crate::presentation::requests::index_data_query::store_index_data_query_requ
 use crate::infrastructure::repositories::data_source_repository::DataSourceRepository;
 use crate::infrastructure::repositories::index_data_query_repository::IndexDataQueryRepository;
 use crate::presentation::requests::index_data_query::get_index_data_query_request_dto::GetIndexDataQueryRequest;
+use crate::requests::index_data_query::insert_data_index_data_query_request::InsertDataIndexDataQueryRequest;
 use crate::state::AppState;
 
 pub struct IndexDataQueryController {}
@@ -129,12 +130,13 @@ impl IndexDataQueryController {
     
     pub async fn insert_data(
         State(state): State<AppState>,
-        Json(payload): Json<StoreIndexDataQueryRequest>,
+        Json(payload): Json<InsertDataIndexDataQueryRequest>,
     )->impl IntoResponse {
         println!("{:?}", payload);
         let db = (*state.database).clone();
         let repository = IndexDataQueryRepository::new(db);
         let use_case = InsertDataIndexDataQueryRequestUseCase::new(repository).await;
+        let _result = use_case.execute(&payload).await;
         Json(json!({
         "code": 200,
         "success": true,
