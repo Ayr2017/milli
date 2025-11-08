@@ -1,9 +1,10 @@
 <script>
     async function inertData(id) {
-        let response = await fetch(`api/index-data-queries/insert-data`, {
+        let response = await fetch(`/api/index-data-queries/insert-data`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
             },
             body: JSON.stringify({
                 id: id

@@ -17,6 +17,13 @@ impl <R: IndexDataQueryRepositoryTrait> InsertDataIndexDataQueryRequestUseCase <
         payload: &InsertDataIndexDataQueryRequest,
     ) -> Result<String, Error> {
         let index_data_query = Self::get_index_data_query(&self, payload).await;
+        let data_source_id = index_data_query.data_source_id;
+        let index_uid = index_data_query.index_uid;
+        let query = index_data_query.query;
+
+        let data_source = self.repo.get(data_source_id).await.ok_or("Data source not found".to_string());
+        let result = self.execute_query(&data_source, &query).await;
+        
         // получить data_source по index_data_query.data_source_id
         // получить индекс по data_source.index_uid из state.meilisearch_client; client.get_index(uid).await.unwrap();
         // из этого создать подключение (queryDB) к бд по параметрам из data_source
