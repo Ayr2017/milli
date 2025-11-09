@@ -3,6 +3,7 @@ use crate::domain::data_source::entities::data_source::DataSource;
 use serde_json::Value;
 use sqlx::postgres::{PgPool, PgRow};
 use sqlx::{Column, Row, TypeInfo};
+use crate::domain::data_source::entities::index_data_query::IndexDataQuery;
 
 pub struct QueryExecutor;
 
@@ -13,18 +14,23 @@ impl QueryExecutor {
 
     /// Выполняет запрос с лимитом для тестирования (возвращает одну запись)
     pub async fn execute_test_query(
+        &self,
         data_source: &DataSource,
         query: &str,
     ) -> Result<Value, String> {
-        let results = Self::execute_query(data_source, query, Some(1)).await?;
-        Ok(results.into_iter().next().unwrap_or(Value::Null))
+        let results = &self.execute_query(&data_source, &query, 1).await?;
+        match results.into_iter().next() {
+            Some(row) => row,
+            None => Err("No results found".to_string()),
+        }
     }
 
     /// Выполняет запрос и возвращает все записи или с указанным лимитом
     pub async fn execute_query(
+        &self,
         data_source: &DataSource,
         query: &str,
-        limit: Option<u32>,
+        limit: u32,
     ) -> Result<Vec<Value>, String> {
         let final_query = Self::prepare_query(query, limit);
         let connection_string = Self::build_connection_string(data_source);
@@ -130,13 +136,10 @@ impl QueryExecutor {
     }
 
     /// Подготавливает запрос с учетом лимита
-    fn prepare_query(query: &str, limit: Option<u32>) -> String {
+    fn prepare_query(query: &str, limit: u32) -> String {
         let query_without_semicolon = query.strip_suffix(";").unwrap_or(query);
 
-        match limit {
-            Some(limit_value) => format!("{} LIMIT {}", query_without_semicolon, limit_value),
-            None => query_without_semicolon.to_string(),
-        }
+        format!("{} LIMIT {}", query_without_semicolon, limit)
     }
 
     /// Строит строку подключения к PostgreSQL
