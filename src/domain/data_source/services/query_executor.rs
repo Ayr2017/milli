@@ -20,7 +20,7 @@ impl QueryExecutor {
     ) -> Result<Value, String> {
         let results = &self.execute_query(&data_source, &query, 1).await?;
         match results.into_iter().next() {
-            Some(row) => row,
+            Some(row) => Ok(row.clone()),
             None => Err("No results found".to_string()),
         }
     }
@@ -201,15 +201,15 @@ impl QueryExecutor {
                     }
                 },
                 "UUID" => {
-                    match row.try_get::<Option<uuid::Uuid>, _>(column_name) {
+                    match row.try_get::<Option<String>, _>(column_name) {
                         Ok(Some(val)) => Value::String(val.to_string()),
                         Ok(None) => Value::Null,
                         Err(_) => Value::Null,
                     }
                 },
                 "TIMESTAMP" | "TIMESTAMPTZ" => {
-                    match row.try_get::<Option<chrono::DateTime<chrono::Utc>>, _>(column_name) {
-                        Ok(Some(val)) => Value::String(val.to_rfc3339()),
+                    match row.try_get::<Option<String>, _>(column_name) {
+                        Ok(Some(val)) => Value::String(val),
                         Ok(None) => Value::Null,
                         Err(_) => Value::Null,
                     }

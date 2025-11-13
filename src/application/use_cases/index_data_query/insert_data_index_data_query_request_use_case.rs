@@ -31,6 +31,7 @@ impl <R: IndexDataQueryRepositoryTrait, R2: DataSourceRepositoryTrait> InsertDat
         let limit = 1;
 
         let data_source = self.data_source_repository.get(data_source_id).await.unwrap();
+        println!("Data source: {:?}", &data_source);
         //TODO: выполнить правильный запрос 
         let result = query_executor.execute_query(&data_source, &query, limit).await;
         

@@ -134,8 +134,9 @@ impl IndexDataQueryController {
     )->impl IntoResponse {
         println!("{:?}", payload);
         let db = (*state.database).clone();
-        let repository = IndexDataQueryRepository::new(db);
-        let use_case = InsertDataIndexDataQueryRequestUseCase::new(repository).await;
+        let repository = IndexDataQueryRepository::new(db.clone());
+        let data_source_repository = DataSourceRepository::new(db.clone());
+        let use_case = InsertDataIndexDataQueryRequestUseCase::new(repository, data_source_repository).await;
         let _result = use_case.execute(&payload).await;
         Json(json!({
         "code": 200,

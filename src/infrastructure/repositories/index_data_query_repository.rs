@@ -18,8 +18,24 @@ impl IndexDataQueryRepositoryTrait for IndexDataQueryRepository {
     }
 
     async fn get(&self, id: u32) -> Option<IndexDataQuery> {
-        todo!()
-    }
+        let connection = self.db.get_pool_connection().await.unwrap();
+        let result = sqlx::query(r#"SELECT * FROM index_data_queries WHERE id = $1"#)
+            .bind(id)
+            .fetch_one(connection)
+            .await;
+
+        match result {
+            Ok(rows) => {
+                Some(IndexDataQuery {
+                    id: rows.get("id"),
+                    data_source_id: rows.get("data_source_id"),
+                    index_uid: rows.get("index_uid"),
+                    query: rows.get("query"),
+                })
+            }
+            Err(_) => None,
+            }
+        }
 
     /**
      * Get all index data queries
