@@ -1,4 +1,5 @@
 use anyhow::Error;
+use chrono::Utc;
 use meilisearch_sdk::client::Client;
 use meilisearch_sdk::tasks::Task;
 use serde_json::json;
@@ -28,23 +29,20 @@ impl <R: IndexDataQueryRepositoryTrait, R2: DataSourceRepositoryTrait> InsertDat
         &self,
         payload: &InsertDataIndexDataQueryRequest,
     ) -> Result<String, Error> {
+        
+        // нужно работать с батчами
+        // измерить нужное количество батчей и через цикл получать из бд и отправлять
+        
         let query_executor = QueryExecutor::new();
         let index_data_query = Self::get_index_data_query(&self, payload).await;
-        println!("Index data query: {:?}", &index_data_query);
-
         let data_source_id = index_data_query.data_source_id;
         let index_uid = index_data_query.index_uid;
-
-        println!("Index data query: {:?}", &index_uid);
-
         let query = index_data_query.query;
-        let limit = 10000;
+        let limit = 3_000;
 
         let data_source = self.data_source_repository.get(data_source_id).await.unwrap();
-        println!("Data source: {:?}", &data_source);
 
         let result = query_executor.execute_query(&data_source, &query, limit).await;
-        println!("Result: {:?}", &result);
 
         let document = match result {
             Ok(document) => {
@@ -57,22 +55,12 @@ impl <R: IndexDataQueryRepositoryTrait, R2: DataSourceRepositoryTrait> InsertDat
             },
         };
 
-        let documents_vec = document.clone();
-        println!("Document: {:?}", documents_vec.clone()); // Теперь выведет чистый JSON
-        println!("Document: {}", &index_uid.to_string()); // Теперь выведет чистый JSON
-
-        for (i, doc) in document.clone().iter().enumerate() {
-            println!("Document {}: {}", i, doc);
-            println!("Document {} type: {:?}", i, doc);
-        }
         let meiliserach_insert_result = match self.meilisearch_client
             .index(&index_uid.to_string())
             .add_documents(&document, Some("id"))
             .await
         {
             Ok(task_info) => {
-                println!("Task enqueued: {:?}", task_info);
-
                 // Ждем завершения задачи
                 let final_task = self.meilisearch_client
                     .wait_for_task(task_info, None, None)
@@ -106,7 +94,7 @@ impl <R: IndexDataQueryRepositoryTrait, R2: DataSourceRepositoryTrait> InsertDat
 
         // этот json отправить на добавление в index
         // Temporary stub implementation
-        Ok("Success - Data insertion request processed".to_string())
+        Ok((Utc::now().format("%Y-%m-%d %H:%M:%S").to_string()  ))
     }
     
     async fn get_index_data_query(&self, request: &InsertDataIndexDataQueryRequest) -> IndexDataQuery {

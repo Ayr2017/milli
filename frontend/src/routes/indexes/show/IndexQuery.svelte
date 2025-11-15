@@ -12,6 +12,7 @@
         });
         let data = await response.json();
         console.log(data);
+        console.log(Date.now());
         if(data.success){
             console.log("success");
         }
