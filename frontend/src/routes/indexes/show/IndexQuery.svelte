@@ -25,7 +25,7 @@ import {Button} from 'flowbite-svelte'
 {#each indexDataQueries as indexQuery}
 <tr class="font-semibold text-gray-900 dark:text-white">
     <td  class="px-6 py-3 text-base">
-        {indexQuery.id}
+        {indexQuery.index_uid}
     </td>
     <td class="font-semibold text-gray-900 dark:text-white">
         <Button color="gray" onclick={()=>inertData(indexQuery.id)} class="cursor-pointer text-sm text-blue-500 hover:text-blue-700 dark:text-blue-500 dark:hover:text-blue-700">Insert data to index</Button>

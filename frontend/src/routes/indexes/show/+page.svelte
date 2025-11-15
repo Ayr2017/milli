@@ -43,6 +43,7 @@
     });
 
     async function getIndexDataQueries(uid){
+        console.log("uid: {uid}");
         indexDataQueries = await fetch(`/api/index-data-queries?filter[index_uid]=${uid}&limit=1000`, {
             method: "GET",
             headers: {
@@ -56,6 +57,7 @@
                 return response.json();
             }
         }).then((response)=>{
+            console.log("Response:", response.data);
             return response.data;
         });
     }
