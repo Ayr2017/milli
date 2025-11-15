@@ -1,4 +1,5 @@
 use anyhow::Error;
+use serde_json::json;
 use crate::domain::data_source::entities::data_source::DataSource;
 use crate::domain::data_source::entities::index_data_query::IndexDataQuery;
 use crate::domain::repository::index_data_query_repository_trait::IndexDataQueryRepositoryTrait;
@@ -32,14 +33,25 @@ impl <R: IndexDataQueryRepositoryTrait, R2: DataSourceRepositoryTrait> InsertDat
 
         let data_source = self.data_source_repository.get(data_source_id).await.unwrap();
         println!("Data source: {:?}", &data_source);
-        //TODO: выполнить правильный запрос 
+
         let result = query_executor.execute_query(&data_source, &query, limit).await;
+        println!("Result: {:?}", &result);
+
+        let document = match result {
+            Ok(document) => {
+                // Преобразуем в чистый JSON
+                serde_json::to_value(document).map_err(|e| anyhow::anyhow!("Serialization error: {}", e))?
+            },
+            Err(e) => {
+                println!("Error: {:?}", e);
+                return Err(anyhow::anyhow!("Error: {:?}", e));
+            },
+        };
+
+        println!("Document: {}", &document); // Теперь выведет чистый JSON
         
-        // получить data_source по index_data_query.data_source_id
-        // получить индекс по data_source.index_uid из state.meilisearch_client; client.get_index(uid).await.unwrap();
-        // из этого создать подключение (queryDB) к бд по параметрам из data_source
-        // выполнить запрос в queryDB с лимитом 1 (для теста)
-        // полученный ответ превратить в json и вывести в консоль
+        
+
         // этот json отправить на добавление в index
         // Temporary stub implementation
         Ok("Success - Data insertion request processed".to_string())
