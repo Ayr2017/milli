@@ -1,5 +1,20 @@
 use std::path::PathBuf;
-use axum::{Router, routing::get, routing::post, response::IntoResponse, http::{StatusCode, Uri, HeaderMap, header}};
+use axum::{
+    Router,
+    routing::get,
+    routing::post,
+    response::IntoResponse,
+    http::{
+        StatusCode,
+        Uri,
+        HeaderMap,
+        header
+    },
+    extract::ws::{
+        WebSocketUpgrade,
+        WebSocket
+    },
+};
 use axum::routing::delete;
 use tower_http::services::ServeDir;
 
@@ -9,6 +24,7 @@ use crate::controllers::api::api_controller::ApiController;
 use crate::controllers::api::index_controller::IndexController;
 use crate::controllers::api::data_source_controller::DataSourceController;
 use crate::presentation::controllers::api::v1::index_data_query_controller::IndexDataQueryController;
+use crate::presentation::controllers::api::v1::ws_controller::WsController;
 use crate::state::AppState;
 
 pub async fn create_app(
@@ -31,7 +47,7 @@ pub async fn create_app(
         .route("/api/index-data-queries/test", get(IndexDataQueryController::test))
         .route("/api/index-data-queries", post(IndexDataQueryController::store))
         .route("/api/index-data-queries/insert-data", post(IndexDataQueryController::insert_data))
-
+        .route("/ws", get(WsController::websocket_handler))
         // Static resources for SvelteKit (JS, CSS, images)
         .nest_service("/_app", ServeDir::new(PathBuf::from("static/_app")))
         .nest_service("/assets", ServeDir::new(PathBuf::from("static/assets")))

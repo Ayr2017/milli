@@ -1,7 +1,7 @@
 <script>
     import '../app.css';
-    import favicon from '$lib/assets/favicon.svg';
-    import logo from '$lib/assets/img.png';
+    import favicon from '$lib/assets/favicon.ico';
+    import logo from '$lib/assets/android-chrome-192x192.png';
     import {page} from '$app/state';
 
     let activeUrl = $derived(page.url.pathname);
@@ -24,10 +24,10 @@
     <NavUl {activeUrl}>
         <NavLi href="/">Home</NavLi>
         <NavLi href="/about">About</NavLi>
-        <NavLi href="/about">Dashboard</NavLi>
+        <NavLi href="/dashboard">Dashboard</NavLi>
         <NavLi href="/indexes">Indexes</NavLi>
-        <NavLi href="/about">Search settings</NavLi>
-        <NavLi href="/about">Api keys</NavLi>
+        <NavLi href="/search-settings">Search settings</NavLi>
+        <NavLi href="/api-keys">Api keys</NavLi>
         <NavLi href="/data-sources">Data sources</NavLi>
         <NavLi href="/about">Analytics</NavLi>
         <DarkMode/>
