@@ -21,10 +21,12 @@ use tower_http::services::ServeDir;
 
 // Import controllers
 use crate::controllers::api::api_controller::ApiController;
-use crate::controllers::api::index_controller::IndexController;
+// use crate::controllers::api::index_controller::IndexController;
 use crate::controllers::api::data_source_controller::DataSourceController;
 use crate::presentation::controllers::api::v1::index_data_query_controller::IndexDataQueryController;
 use crate::presentation::controllers::api::v1::ws_controller::WsController;
+use crate::presentation::controllers::api::v1::index_controller::IndexController;
+use crate::presentation::controllers::api::v1::home_controller::HomeController;
 use crate::state::AppState;
 
 pub async fn create_app(
@@ -33,6 +35,7 @@ pub async fn create_app(
     
     Router::new()
         // API routes
+        .route("/api/home", get(HomeController::index))
         .route("/api/test", get(ApiController::test))
         .route("/api/indexes", get(IndexController::index))
         .route("/api/indexes", post(IndexController::store))

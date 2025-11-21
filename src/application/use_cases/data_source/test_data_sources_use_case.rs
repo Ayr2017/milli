@@ -1,21 +1,22 @@
 use anyhow::Error;
 use colored::Colorize;
-use sqlx::{Pool, Sqlite, query_as, postgres::PgPoolOptions};
+use sqlx::{query_as, Pool, Sqlite};
+use sqlx::postgres::PgPoolOptions;
 use crate::models::data_source::DataSource;
 use crate::requests::data_source::test_data_source_request::TestDataSourceRequest;
 
-pub struct DataSourceService {
+pub struct TestDataSourcesUseCase{
     pub pool: Pool<Sqlite>,
 }
 
-impl DataSourceService {
-    pub fn new(pool: Pool<Sqlite>) -> Self {
-        Self {
+impl TestDataSourcesUseCase {
+    pub async  fn new(pool: Pool<Sqlite>) -> Self {
+        Self{
             pool,
         }
     }
 
-    pub async fn test_data_source(
+    pub async fn execute(
         &self,
         payload: TestDataSourceRequest,
     ) -> Result<String, Error> {
@@ -25,12 +26,12 @@ impl DataSourceService {
             .bind(payload.id)
             .fetch_one(&self.pool)
             .await {
-                Ok(data_source) => data_source,
-                Err(e) => {
-                    eprintln!("{} {}", "❌ Failed to query data source: ".color("Red"), e);
-                    return Err(anyhow::anyhow!("Failed to query data source: {}", e));
-                }
-            };
+            Ok(data_source) => data_source,
+            Err(e) => {
+                eprintln!("{} {}", "❌ Failed to query data source: ".color("Red"), e);
+                return Err(anyhow::anyhow!("Failed to query data source: {}", e));
+            }
+        };
 
         // Test the connection based on database type
         match database_params.database_type.as_str() {
@@ -50,7 +51,7 @@ impl DataSourceService {
             },
             "mysql" => {
                 // Since MySQL feature is not enabled in sqlx, we can't directly test the connection
-                println!("{} {}", "⚠️ MySQL connection test: ".color("Yellow"), 
+                println!("{} {}", "⚠️ MySQL connection test: ".color("Yellow"),
                          "MySQL connection testing is not directly supported. Please ensure MySQL features are enabled in sqlx.");
                 return Ok("MySQL connection test: Feature not enabled. Connection parameters look valid.".to_string());
             },

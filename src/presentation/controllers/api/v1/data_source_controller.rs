@@ -1,15 +1,24 @@
-use crate::presentation::requests::data_sources::IndexDataSourceRequest;
-use crate::application::services::data_source_service::DataSourceService;
-pub struct DataSourceController <S> {
-    service: DataSourceService<S>,
+use axum::extract::{Path, State};
+use axum::Json;
+use axum::response::IntoResponse;
+use colored::Colorize;
+use sqlx::query_as;
+use crate::application::use_cases::data_source::test_data_sources_use_case::TestDataSourcesUseCase;
+use crate::presentation::requests::data_sources::index_data_source_request::IndexDataSourceRequest;
+use crate::state::AppState;
+
+pub struct DataSourceController {
+    use_case: TestDataSourcesUseCase,
 }
 
-impl <Controller> DataSourceController<Controller>
-{
-    fn new (service: DataSourceService<S>) -> Self {Self{service}}
-}
 
 impl DataSourceController {
+    fn new (use_case: TestDataSourcesUseCase) -> Self {
+        Self{
+            use_case
+        }
+    }
+
     pub async fn index(
         State(state): State<AppState>,
         Json(payload): Json<IndexDataSourceRequest>,
