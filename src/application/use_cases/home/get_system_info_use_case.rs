@@ -13,7 +13,9 @@ impl GetSystemInfoUseCase {
         Self {}
     }
     pub async fn execute(&self) -> Result<SystemInfoDto, anyhow::Error> {
-        let cpu = self.get_cpu().await?;
+        let sys = System::new_all(); // Инициализируем с полной информацией
+
+        let cpu = self.get_cpu(sys).await?;
         println!("cpu: {:?}", cpu);
         Ok(SystemInfoDto {
             cpu,
@@ -23,8 +25,7 @@ impl GetSystemInfoUseCase {
         })
     }
 
-    async fn get_cpu(&self) -> Result<CpuData, anyhow::Error> {
-        let mut sys = System::new_all(); // Инициализируем с полной информацией
+    async fn get_cpu(&self, mut sys: System) -> Result<CpuData, anyhow::Error> {
         
         // Обновляем информацию о CPU
         sys.refresh_cpu_all();
