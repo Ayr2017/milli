@@ -36,6 +36,9 @@ pub async fn create_app(
     Router::new()
         // API routes
         .route("/api/home", get(HomeController::index))
+        .route("/api/dashboard", get(HomeController::index))
+        .route("/api/search-settings", get(HomeController::index))
+        .route("/api/api-keys", get(HomeController::index))
         .route("/api/test", get(ApiController::test))
         .route("/api/indexes", get(IndexController::index))
         .route("/api/indexes", post(IndexController::store))
