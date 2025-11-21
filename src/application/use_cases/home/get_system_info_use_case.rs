@@ -36,12 +36,10 @@ impl GetSystemInfoUseCase {
         sys.refresh_cpu_all();
         
         let cpus = sys.cpus();
-        let _cpu_count = cpus.len();
         let mut cpu_usages = HashMap::new();
         
         for cpu in cpus {
             cpu_usages.insert(cpu.name().to_string(), cpu.cpu_usage());
-            print!("{}% ", cpu.cpu_usage());
         }
         
         Ok(CpuData::new("cpu".to_string(), cpu_usages))
