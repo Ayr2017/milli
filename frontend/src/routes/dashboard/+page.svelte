@@ -1,16 +1,25 @@
-<script>
-    import { Alert } from "flowbite-svelte";
+<script lang="ts">
+    import {Card, P} from "flowbite-svelte";
+    import {ClipboardCheckSolid} from "flowbite-svelte-icons";
+    import Sidebar from "./Sidebar.svelte";
 
-    console.log('About page');
-    fetch('http://localhost:3000/api/test')
-        .then(response => response.json())
-        .then(data => console.log(data));
+    import Cpu from "./Cpu.svelte";
+    import Indexes from "./Indexes.svelte";
+
+    let content = $state(0);
+
+    function setContent(value: number) {
+        content = value;
+    }
 </script>
 
-<h1>About Page</h1>
-<p>This is the about page of our application.</p>
-
-<Alert color="blue">
-    <span class="font-large">Default alert!</span>
-    <a href="/">Go back to home</a>
-</Alert>
+<div class="flex mx-auto h-full"> <!-- Контейнер -->
+    <Sidebar bind:content {setContent}></Sidebar>
+    <div class="flex flex-col w-full h-full p-2"> <!-- Контейнер -->
+        {#if ((content) === 0) }
+            <Cpu></Cpu>
+        {:else if ((content) === 1) }
+            <Indexes></Indexes>
+        {/if}
+    </div>
+</div>
