@@ -1,8 +1,12 @@
+use std::ops::Deref;
 use axum::extract::{Path, State};
+use axum::http::StatusCode;
 use crate::requests::index::store_index_request::StoreIndexRequest;
 use axum::Json;
 use axum::response::IntoResponse;
 use colored::Colorize;
+use serde_json::json;
+use crate::application::use_cases::index::show_index_use_case::ShowIndexUseCase;
 use crate::responses::indexes::show_index_response::ShowIndexResponse;
 use crate::state::AppState;
 
@@ -83,39 +87,21 @@ impl IndexController {
         Path(uid): Path<String>,
         State(state): State<AppState>,
     ) -> impl IntoResponse {
-        let client = state.meilisearch_client;
-            
-        let index_info = client.get_index(uid).await.unwrap();
-        let stats = index_info.get_stats().await.unwrap();
-        let settings = index_info.get_settings().await.unwrap();
-        println!("{}", format!("{:?}", stats).bright_blue());
-        let data = serde_json::json!({
-        "uid": index_info.uid,
-        "created_at": index_info.created_at,
-        "updated_at": index_info.updated_at,
-        "primary_key": index_info.primary_key,
-        "stats": {
-            "number_of_documents": stats.number_of_documents,
-            "is_indexing": stats.is_indexing,
-        },
-        "searchable_attributes": settings.searchable_attributes,
-        "filterable_attributes": settings.filterable_attributes,
-        "sortable_attributes": settings.sortable_attributes,
-        "displayable_attributes": settings.displayed_attributes,
-        "ranking_rules": settings.ranking_rules,
-        "stop_words": settings.stop_words,
-        "synonyms": settings.synonyms,
-        "distinct_attribute": settings.distinct_attribute,
-    });
-        // Преобразуем в ShowIndexResponse для форматирования дат
-        match ShowIndexResponse::from_json_value(&data) {
-            Ok(formatted_response) => {
-                Json(serde_json::to_value(formatted_response).unwrap())
-            }
+        println!("{}",uid.clone().to_string());
+        let client_ref = state.meilisearch_client.as_ref();
+        let show_index_use_case = ShowIndexUseCase::new(client_ref.clone(), uid.clone());
+
+        match show_index_use_case.execute().await {
+            Ok(data) => Json(data).into_response(),
             Err(e) => {
-                // В случае ошибки возвращаем оригинальный JSON
-                eprintln!("Error formatting dates: {}", e);
-                Json(data)
+                eprintln!("Ошибка получения индекса: {:?}", e);
+                let error_response = serde_json::json!({
+                    "code": 500,
+                    "success": false,
+                    "message": "Не удалось получить индекс",
+                    "error": format!("Индекс '{}' не найден или произошла ошибка", uid.clone())
+            });
+                (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)).into_response()
             }
         }
     }
