@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::database::Database;
 use crate::domain::data_source::entities::index_data_query::IndexDataQuery;
 use crate::domain::repository::data_source_repository_trait::DataSourceRepositoryTrait;
@@ -40,9 +41,16 @@ impl IndexDataQueryRepositoryTrait for IndexDataQueryRepository {
     /**
      * Get all index data queries
      */
-    async fn all(&self) -> Result<Vec<IndexDataQuery>, anyhow::Error> {
+    async fn all(&self, filter:Option<HashMap<String,String>>) -> Result<Vec<IndexDataQuery>, anyhow::Error> {
         let connection = self.db.get_pool_connection().await.unwrap();
-        let result = sqlx::query(r#"SELECT * FROM index_data_queries"#)
+        let filter = filter.unwrap_or_default();
+        let where_clause = if filter.contains_key("filter[index_uid]") {
+            filter.get("filter[index_uid]").unwrap().to_string()
+        } else {
+            String::from("")
+        };
+        let result = sqlx::query(r#"SELECT * FROM index_data_queries WHERE index_uid LIKE CONCAT('%', ?, '%')"#)
+            .bind(where_clause)
             .fetch_all(connection)
             .await;
 
@@ -59,9 +67,9 @@ impl IndexDataQueryRepositoryTrait for IndexDataQueryRepository {
                 }
                 Ok(index_data_queries)
             }
-            Err(_) => Err(
+            Err(err ) => Err(
                 anyhow::Error::msg(
-                    String::from("Error getting all index data queries")
+                    String::from("Error getting all index data queries. ")+&err.to_string()
                 )
             ),
         }

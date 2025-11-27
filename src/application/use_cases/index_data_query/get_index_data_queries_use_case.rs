@@ -15,11 +15,11 @@ impl <R: IndexDataQueryRepositoryTrait>  GetIndexDataQueriesUseCase <R> {
     
     pub async fn execute(
         &self, 
-        _query: &IndexIndexDataQueryRequest
+        query: &IndexIndexDataQueryRequest
     ) -> Result<Vec<IndexDataQuery>, String> {
-        match self.repo.all().await {
+        match self.repo.all(query.filter.clone()).await {
             Ok(index_data_queries) => Ok(index_data_queries),
-            Err(_) => Err(String::from("Error getting index data queries")),
+            Err(err ) => Err(String::from("Error getting index data queries. ") + &err.to_string()),
         }
     }
 }

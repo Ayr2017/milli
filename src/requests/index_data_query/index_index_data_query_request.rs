@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -7,5 +8,6 @@ pub struct IndexIndexDataQueryRequest {
     pub offset: Option<i32>,
     pub sort: Option<String>,
     pub sort_by: Option<String>,
-    pub filter: Option<Vec<String>>,
+    #[serde(flatten)]
+    pub filter: Option<HashMap<String, String>>,
 }
