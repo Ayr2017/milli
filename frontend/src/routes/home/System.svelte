@@ -10,7 +10,7 @@
     let intervalId;
 
     onMount(async () => {
-        await getSystemData();
+        // await getSystemData();
         intervalId = setInterval(getSystemData, 1000);
     });
 
