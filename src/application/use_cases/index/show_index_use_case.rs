@@ -6,6 +6,8 @@ use crate::application::use_cases::index::dto::index_stat_dto::IndexStatsDto;
 use meilisearch_sdk::client::Client;
 use meilisearch_sdk::indexes::IndexStats;
 use meilisearch_sdk::settings::Settings;
+use time::format_description;
+use time::format_description::parse;
 
 pub struct ShowIndexUseCase {
     client: Client,
