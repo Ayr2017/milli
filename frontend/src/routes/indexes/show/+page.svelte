@@ -79,6 +79,14 @@
         prompt("Enter the document ID to add to the index:");
     }
 
+    const compactFormat = new Intl.NumberFormat('ru-RU', {
+        notation: 'compact',
+        compactDisplay: 'short'
+    });
+
+    const numberFormatter = new Intl.NumberFormat('ru-RU');
+
+
 </script>
 
 <div class="mx-auto container my-2">
@@ -115,7 +123,7 @@
                                     <TableBodyRow>
                                         <TableBodyCell class="font-medium">Documents</TableBodyCell>
                                         <TableBodyCell>
-                                            <Badge color="blue">{indexData.stats.number_of_documents}</Badge>
+                                            <Badge color="blue">{numberFormatter.format(indexData.stats.number_of_documents)}</Badge>
                                         </TableBodyCell>
                                     </TableBodyRow>
                                     <TableBodyRow>
@@ -141,32 +149,13 @@
                         </div>
                     </Card>
                     <Card size="lg" class="p-4 text-left sm:p-8 md:p-10 w-full">
+                        <h5 class="text-xl dark:text-amber-100 mb-3">Data source</h5>
                         <div class="mb-6">
-                            <Table>
-                                <!--                                <TableBody>-->
-                                <!--                                    <TableBodyRow>-->
-                                <!--                                        <TableBodyCell class="font-medium">Index Name</TableBodyCell>-->
-                                <!--                                    </TableBodyRow>-->
-                                <!--                                    <TableBodyRow>-->
-                                <!--                                        <TableBodyCell class="font-medium">Index Type</TableBodyCell>-->
-                                <!--                                    </TableBodyRow>-->
-                                <!--                                    <TableBodyRow>-->
-                                <!--                                        <TableBodyCell></TableBodyCell>-->
-                                <!--                                    </TableBodyRow>-->
-                                <!--                                </TableBody>-->
-                                <tfoot>
-                                <IndexQuery indexDataQueries="{indexDataQueries}"></IndexQuery>
-
-                                <tr class="font-semibold text-gray-900 dark:text-white">
-                                    <th scope="row" class="px-6 py-3 text-base">
-                                        <IndexDataSourceModal indexUid={indexUid}/>
-                                    </th>
-                                    <th class="font-semibold text-gray-900 dark:text-white">
-                                        <Button color="blue" class="mr-2" onclick="{addDocuments}">Check</Button>
-                                    </th>
-                                </tr>
-                                </tfoot>
-                            </Table>
+                            <IndexQuery indexDataQueries="{indexDataQueries}"></IndexQuery>
+                        </div>
+                        <div class="flex flex-row justify-between">
+                            <IndexDataSourceModal indexUid={indexUid}/>
+                            <Button size="xs" color="blue" class="cursor-pointer" onclick="{addDocuments}">Check</Button>
                         </div>
 
                     </Card>
@@ -174,14 +163,9 @@
                 </div>
                 <div class="d-flex flex-col gap-4">
 
-                    <Card size="lg" class="p-4 text-left sm:p-8 md:p-10 w-full">
-                        <h2 class="text-2xl mb-4 dark:text-primary-900">Index: {indexData.uid}</h2>
-
-
-                        <!-- Settings -->
+                    <Card size="lg" class="p-4 text-left sm:p-8 md:p-10 w-full"><!-- Settings -->
                         <div class="mb-6">
-                            <h3 class="text-xl  mb-3">Settings</h3>
-
+                            <h3 class="text-xl dark:text-amber-100 mb-3">Index settings of <span class="dark:text-amber-500">{indexData.uid}</span></h3>
                             <!-- Ranking Rules -->
                             <div class="mb-4">
                                 <Label class="font-medium">Ranking Rules</Label>

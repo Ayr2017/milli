@@ -75,7 +75,7 @@
     }
 </script>
 
-<Button onclick={() => (formModal = true)}>Form modal</Button>
+<Button size="xs" color="green" class="cursor-pointer" outline onclick={() => (formModal = true)}>Add new query</Button>
 
 <Modal form bind:open={formModal} size="xs" {onaction}>
     <div class="flex flex-col space-y-6">
