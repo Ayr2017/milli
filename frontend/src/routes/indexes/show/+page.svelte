@@ -113,14 +113,6 @@
                                         <TableBodyCell>{indexData.primary_key || 'Not set'}</TableBodyCell>
                                     </TableBodyRow>
                                     <TableBodyRow>
-                                        <TableBodyCell class="font-medium">Created At</TableBodyCell>
-                                        <TableBodyCell>{indexData.created_at}</TableBodyCell>
-                                    </TableBodyRow>
-                                    <TableBodyRow>
-                                        <TableBodyCell class="font-medium">Updated At</TableBodyCell>
-                                        <TableBodyCell>{indexData.updated_at}</TableBodyCell>
-                                    </TableBodyRow>
-                                    <TableBodyRow>
                                         <TableBodyCell class="font-medium">Documents</TableBodyCell>
                                         <TableBodyCell>
                                             <Badge color="blue">{indexData.stats.number_of_documents}</Badge>
@@ -135,6 +127,14 @@
                                                 <Badge color="green">Ready</Badge>
                                             {/if}
                                         </TableBodyCell>
+                                    </TableBodyRow>
+                                    <TableBodyRow>
+                                        <TableBodyCell class="font-medium">Created At</TableBodyCell>
+                                        <TableBodyCell>{indexData.created_at}</TableBodyCell>
+                                    </TableBodyRow>
+                                    <TableBodyRow>
+                                        <TableBodyCell class="font-medium">Updated At</TableBodyCell>
+                                        <TableBodyCell>{indexData.updated_at}</TableBodyCell>
                                     </TableBodyRow>
                                 </TableBody>
                             </Table>

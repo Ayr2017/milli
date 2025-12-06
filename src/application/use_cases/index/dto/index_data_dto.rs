@@ -6,8 +6,8 @@ use time::OffsetDateTime;
 #[derive(Serialize)]
 pub struct IndexDataDto {
     pub uid: String,
-    pub created_at: OffsetDateTime,
-    pub updated_at: OffsetDateTime,
+    pub created_at: String,
+    pub updated_at: String,
     pub primary_key: String,
     pub stats: IndexStatsDto,
     pub searchable_attributes: Vec<String>,
@@ -23,8 +23,8 @@ pub struct IndexDataDto {
 impl IndexDataDto {
     pub fn new(
         uid: String,
-        created_at: OffsetDateTime,
-        updated_at: OffsetDateTime,
+        created_at: String,
+        updated_at: String,
         primary_key: String,
         stats: IndexStatsDto,
         searchable_attributes: Vec<String>,

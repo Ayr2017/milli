@@ -6,8 +6,7 @@ use crate::application::use_cases::index::dto::index_stat_dto::IndexStatsDto;
 use meilisearch_sdk::client::Client;
 use meilisearch_sdk::indexes::IndexStats;
 use meilisearch_sdk::settings::Settings;
-use time::format_description;
-use time::format_description::parse;
+use crate::utilits::DateTimeFormatter;
 
 pub struct ShowIndexUseCase {
     client: Client,
@@ -41,8 +40,8 @@ impl ShowIndexUseCase {
         let index_settings_dto = self.prepare_index_settings(index_settings).await;
         let index_data_dto = IndexDataDto {
             uid: index_dto.uid,
-            created_at: index_dto.created_at,
-            updated_at: index_dto.updated_at,
+            created_at: index_dto.created_at.to_formatted_string(),
+            updated_at: index_dto.updated_at.to_formatted_string(),
             primary_key: index_dto.primary_key,
             stats: index_stats_dto,
             searchable_attributes: index_settings_dto.searchable_attributes,
