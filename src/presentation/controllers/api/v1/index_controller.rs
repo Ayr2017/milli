@@ -9,6 +9,7 @@ use serde_json::json;
 use crate::application::use_cases::index::show_index_use_case::ShowIndexUseCase;
 use crate::responses::indexes::show_index_response::ShowIndexResponse;
 use crate::state::AppState;
+use crate::utilits::DateTimeFormatter;
 
 pub struct IndexController {}
 
@@ -25,7 +26,7 @@ impl IndexController {
                 serde_json::json!({
                     "uid": index.uid,
                     "primary_key": index.primary_key, 
-                    "created_at": index.created_at,
+                    "created_at": index.created_at.to_formatted_string(),
                 })
             }).collect::<Vec<_>>()
         );
