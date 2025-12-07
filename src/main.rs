@@ -1,8 +1,10 @@
+use clap::Parser;
 use std::ops::Deref;
 use anyhow::Context;
 use crate::config::application::ApplicationConfig;
 use crate::database::Database;
 use crate::state::AppState;
+use crate::presentation::cli::cli_app::Args;
 
 mod config;
 mod controllers;
@@ -19,11 +21,15 @@ mod application;
 mod presentation;
 mod domain;
 
+
 mod infrastructure;
 mod utilits;
 
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let args = <Args as clap::Parser>::parse();
+    println!("Hello, {}!", args.name.unwrap_or_else(|| "world".to_string()));
     // Инициализация логирования
     tracing_subscriber::fmt::init();
 

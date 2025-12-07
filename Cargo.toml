@@ -22,3 +22,5 @@ validator = { version = "0.20.0", features = ["derive"] }
 uuid = { version = "1.18.1", features = ["v4"] }
 sysinfo = "0.37.2"
 time = { version = "0.3.44", features = ["macros"] }
+clap = { version = "4.5.53", features = ["derive"] }
+#clap_derive = "4.5.49"
