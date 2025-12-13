@@ -29,9 +29,13 @@ mod utilits;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = <Args as clap::Parser>::parse();
-    println!("Hello, {}!", args.name.unwrap_or_else(|| "world".to_string()));
     // Инициализация логирования
     tracing_subscriber::fmt::init();
+    tracing::info!("Сообщение");
+    if args.command.is_some() {
+        args.execute(None).await?;
+        return Ok(()); // Завершаем выполнение, не запуская сервер
+    }
 
     initialize_and_run_server().await
 }

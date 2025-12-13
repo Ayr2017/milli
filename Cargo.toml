@@ -23,4 +23,5 @@ uuid = { version = "1.18.1", features = ["v4"] }
 sysinfo = "0.37.2"
 time = { version = "0.3.44", features = ["macros"] }
 clap = { version = "4.5.53", features = ["derive"] }
+tracing = "0.1.41"
 #clap_derive = "4.5.49"
