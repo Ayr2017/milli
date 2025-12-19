@@ -20,7 +20,7 @@ pub enum TestAction {
 }
 
 impl TestCommand {
-    pub async fn execute(&self, state: Option<AppState>) -> Result<()> {
+    pub async fn execute(&self, state: AppState) -> Result<()> {
         match &self.action {
             TestAction::Print { name } => {
                 println!("🔄 Running all tests... {}", name);

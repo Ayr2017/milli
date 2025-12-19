@@ -2,6 +2,7 @@
 use clap::{Parser, Command, Subcommand, value_parser};
 use anyhow::Result;
 use crate::presentation::cli::commands::test_command;
+use crate::presentation::cli::commands::index_command;
 use crate::state::AppState;
 
 // Аннотация #[derive(Parser)] генерирует код для парсинга аргументов
@@ -18,20 +19,21 @@ pub enum Commands {
     /// Test commands
     #[command(name = "test")]
     Test(test_command::TestCommand),
-
+    Index(index_command::IndexCommand),
 }
 
 impl Commands {
     /// Выполнить подкоманду
-    pub async fn execute(&self, state: Option<AppState>) -> Result<()> {
+    pub async fn execute(&self, state: AppState) -> Result<()> {
         match self {
             Commands::Test(cmd) => cmd.execute(state).await,
+            Commands::Index(cmd) => cmd.execute(state).await,
         }
     }
 }
 impl Args {
     /// Выполнить команду
-    pub async fn execute(&self, state: Option<AppState>) -> Result<()> {
+    pub async fn execute(&self, state: AppState) -> Result<()> {
         if let Some(command) = &self.command {
             command.execute(state).await
         } else {

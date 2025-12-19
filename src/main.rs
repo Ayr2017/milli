@@ -29,11 +29,15 @@ mod utilits;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = <Args as clap::Parser>::parse();
+    let config = ApplicationConfig::new().await.expect("Failed to load config");
+    let database = Database::new(&config.db_path).await?;
+    let state = AppState::new(config, database).await?;
+
     // Инициализация логирования
     tracing_subscriber::fmt::init();
     tracing::info!("Сообщение");
     if args.command.is_some() {
-        args.execute(None).await?;
+        args.execute(state).await?;
         return Ok(()); // Завершаем выполнение, не запуская сервер
     }
 
