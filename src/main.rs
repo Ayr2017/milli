@@ -24,7 +24,7 @@ mod domain;
 
 mod infrastructure;
 mod utilits;
-
+mod modules;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

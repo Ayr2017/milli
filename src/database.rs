@@ -57,6 +57,15 @@ impl Database {
             .execute(&self.pool)
             .await?;
 
+        let migration_sql = include_str!("./modules/queue/storage/migrations/001_initial.sql");
+        let mut transaction = self.pool.begin().await?;
+
+        sqlx::query(migration_sql)
+            .execute(&mut *transaction)
+            .await?;
+
+        transaction.commit().await?;
+
         Ok(())
     }
 
