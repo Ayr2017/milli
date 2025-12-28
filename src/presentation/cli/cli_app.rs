@@ -2,6 +2,7 @@
 use clap::{Parser, Command, Subcommand, value_parser};
 use anyhow::Result;
 use crate::presentation::cli::commands::test_command;
+use crate::presentation::cli::commands::test_queue_command;
 use crate::presentation::cli::commands::index_command;
 use crate::state::AppState;
 
@@ -20,6 +21,7 @@ pub enum Commands {
     #[command(name = "test")]
     Test(test_command::TestCommand),
     Index(index_command::IndexCommand),
+    TestQueue(test_queue_command::TestQueueCommand),
 }
 
 impl Commands {
@@ -28,6 +30,7 @@ impl Commands {
         match self {
             Commands::Test(cmd) => cmd.execute(state).await,
             Commands::Index(cmd) => cmd.execute(state).await,
+            Commands::TestQueue(cmd) => cmd.execute(state).await,
         }
     }
 }
