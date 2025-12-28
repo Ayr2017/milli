@@ -36,6 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Инициализация логирования
     tracing_subscriber::fmt::init();
     tracing::info!("Сообщение");
+    
     if args.command.is_some() {
         args.execute(state).await?;
         return Ok(()); // Завершаем выполнение, не запуская сервер
