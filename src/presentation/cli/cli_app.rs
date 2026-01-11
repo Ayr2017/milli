@@ -2,8 +2,9 @@
 use clap::{Parser, Command, Subcommand, value_parser};
 use anyhow::Result;
 use crate::presentation::cli::commands::test_command;
-use crate::presentation::cli::commands::test_queue_command;
+use crate::presentation::cli::commands::queue_command;
 use crate::presentation::cli::commands::index_command;
+use crate::presentation::cli::commands::queue::queue_list_command;
 use crate::state::AppState;
 
 // Аннотация #[derive(Parser)] генерирует код для парсинга аргументов
@@ -21,7 +22,9 @@ pub enum Commands {
     #[command(name = "test")]
     Test(test_command::TestCommand),
     Index(index_command::IndexCommand),
-    TestQueue(test_queue_command::TestQueueCommand),
+    #[command(name = "queue:list")]
+    QueueList(queue_list_command::QueueListCommand),
+    Queue(queue_command::QueueCommand),
 }
 
 impl Commands {
@@ -30,7 +33,8 @@ impl Commands {
         match self {
             Commands::Test(cmd) => cmd.execute(state).await,
             Commands::Index(cmd) => cmd.execute(state).await,
-            Commands::TestQueue(cmd) => cmd.execute(state).await,
+            Commands::Queue(cmd) => cmd.execute(state).await,
+            Commands::QueueList(cmd) => cmd.execute(state).await,
         }
     }
 }
