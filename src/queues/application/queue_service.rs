@@ -3,16 +3,25 @@ use anyhow::Result;
 use chrono::{DateTime, Utc};
 use tracing::{info, warn, error};
 use serde_json;
-
+use std::fmt;
 use crate::queues::domain::entities::job::{Job, JobStatus, FailedJob};
 use crate::queues::domain::job_repository::{JobRepository, FailedJobRepository, QueueStats};
 use crate::queues::domain::value_objects::queue_name::QueueName;
 
 /// Сервис для управления задачами в очереди
+#[derive(Clone)]
 pub struct JobService {
     job_repository: Arc<dyn JobRepository>,
     failed_job_repository: Arc<dyn FailedJobRepository>,
 }
+
+
+// impl fmt::Debug for JobService {
+//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//         f.debug_struct("JobService")
+//             .finish()
+//     }
+// }
 
 impl JobService {
     pub fn new(
@@ -40,7 +49,7 @@ impl JobService {
         );
 
         let created_job = self.job_repository.create(&job).await?;
-        
+
         info!("Successfully enqueued job with ID: {:?}", created_job.id);
         Ok(created_job)
     }
@@ -59,11 +68,11 @@ impl JobService {
     /// Получить следующую задачу для выполнения
     pub async fn get_next_job(&self, queue_name: &QueueName) -> Result<Option<Job>> {
         let job = self.job_repository.get_next_pending_job(queue_name).await?;
-        
+
         if let Some(ref job) = job {
             info!("Retrieved next job from queue '{}': ID {:?}", queue_name, job.id);
         }
-        
+
         Ok(job)
     }
 
@@ -74,9 +83,9 @@ impl JobService {
         }
 
         job.start_execution()?;
-        
+
         info!("Starting job execution: ID {:?}, attempt {}", job.id, job.attempts);
-        
+
         let updated_job = self.job_repository.update(&job).await?;
         Ok(updated_job)
     }
@@ -84,9 +93,9 @@ impl JobService {
     /// Завершить задачу как успешную
     pub async fn complete_job(&self, mut job: Job) -> Result<Job> {
         job.mark_completed();
-        
+
         info!("Completing job: ID {:?}", job.id);
-        
+
         let updated_job = self.job_repository.update(&job).await?;
         Ok(updated_job)
     }
@@ -94,9 +103,9 @@ impl JobService {
     /// Завершить задачу как проваленную
     pub async fn fail_job(&self, mut job: Job, error_message: String) -> Result<()> {
         error!("Failing job ID {:?}: {}", job.id, error_message);
-        
+
         job.mark_failed();
-        
+
         // Если превышено максимальное количество попыток, перемещаем в failed_jobs
         if job.is_max_attempts_exceeded() {
             warn!(
@@ -104,10 +113,10 @@ impl JobService {
                 job.id, 
                 job.max_attempts
             );
-            
+
             let failed_job = FailedJob::from_job(job.clone(), error_message);
             self.failed_job_repository.create(&failed_job).await?;
-            
+
             // Удаляем из основной таблицы jobs
             if let Some(id) = job.id {
                 self.job_repository.delete(id).await?;
@@ -116,7 +125,7 @@ impl JobService {
             // Обновляем статус для повторной попытки
             self.job_repository.update(&job).await?;
         }
-        
+
         Ok(())
     }
 
@@ -168,7 +177,7 @@ impl JobService {
     pub async fn cleanup_completed_jobs(&self, older_than_hours: u64) -> Result<i64> {
         let cutoff_time = Utc::now() - chrono::Duration::hours(older_than_hours as i64);
         let deleted_count = self.job_repository.cleanup_completed_jobs(cutoff_time).await?;
-        
+
         info!("Cleaned up {} completed jobs older than {} hours", deleted_count, older_than_hours);
         Ok(deleted_count)
     }
