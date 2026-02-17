@@ -18,6 +18,64 @@ pub struct Job {
     pub finished_at: Option<DateTime<Utc>>,
 }
 
+/// Доменная сущность FailedJob - представляет проваленную задачу
+#[derive(Debug, Clone, PartialEq)]
+pub struct FailedJob {
+    pub id: Option<i32>,
+    pub queue_name: QueueName,
+    pub payload: String,
+    pub status: JobStatus,
+    pub attempts: i32,
+    pub max_attempts: i32,
+    pub error_message: String,
+    pub created_at: DateTime<Utc>,
+    pub scheduled_at: Option<DateTime<Utc>>,
+    pub started_at: Option<DateTime<Utc>>,
+    pub finished_at: Option<DateTime<Utc>>,
+    pub failed_at: DateTime<Utc>,
+}
+
+impl FailedJob {
+    /// Создать проваленное задание из обычного задания
+    pub fn from_job(job: Job, error_message: String) -> Self {
+        Self {
+            id: None, // Будет установлено базой данных
+            queue_name: job.queue_name,
+            payload: job.payload,
+            status: JobStatus::Failed,
+            attempts: job.attempts,
+            max_attempts: job.max_attempts,
+            error_message,
+            created_at: job.created_at,
+            scheduled_at: job.scheduled_at,
+            started_at: job.started_at,
+            finished_at: job.finished_at,
+            failed_at: Utc::now(),
+        }
+    }
+
+    /// Преобразовать обратно в обычное задание для повторной попытки
+    pub fn to_job(&self) -> Job {
+        Job {
+            id: None, // Новый ID будет назначен
+            queue_name: self.queue_name.clone(),
+            payload: self.payload.clone(),
+            status: JobStatus::Pending,
+            attempts: 0, // Сбрасываем попытки
+            max_attempts: self.max_attempts,
+            created_at: Utc::now(), // Новое время создания
+            scheduled_at: None, // Выполнить сразу
+            started_at: None,
+            finished_at: None,
+        }
+    }
+
+    /// Проверить, можно ли повторить выполнение задания
+    pub fn can_retry(&self) -> bool {
+        self.attempts < self.max_attempts
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum JobStatus {
     Pending,
@@ -63,11 +121,11 @@ impl Job {
         if self.status != JobStatus::Pending {
             return Err(anyhow::anyhow!("Job is not in pending status"));
         }
-        
+
         self.status = JobStatus::Running;
         self.started_at = Some(Utc::now());
         self.attempts += 1;
-        
+
         Ok(())
     }
 

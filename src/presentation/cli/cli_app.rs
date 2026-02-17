@@ -1,10 +1,13 @@
+use std::sync::Arc;
 // src/presentation/cli/cli_app.rs
 use clap::{Parser, Command, Subcommand, value_parser};
 use anyhow::Result;
+use crate::modules::queue::storage::repositories::job_repository::JobRepository;
 use crate::presentation::cli::commands::test_command;
 use crate::presentation::cli::commands::queue_command;
 use crate::presentation::cli::commands::index_command;
 use crate::presentation::cli::commands::queue::queue_list_command;
+use crate::queues::application::queue_service::JobService;
 use crate::state::AppState;
 
 // Аннотация #[derive(Parser)] генерирует код для парсинга аргументов

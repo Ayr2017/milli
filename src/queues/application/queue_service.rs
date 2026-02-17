@@ -4,9 +4,9 @@ use chrono::{DateTime, Utc};
 use tracing::{info, warn, error};
 use serde_json;
 
-use crate::queues::domain::entities::{Job, JobStatus, FailedJob};
-use crate::queues::domain::repositories::{JobRepository, FailedJobRepository, QueueStats};
-use crate::queues::domain::value_objects::QueueName;
+use crate::queues::domain::entities::job::{Job, JobStatus, FailedJob};
+use crate::queues::domain::job_repository::{JobRepository, FailedJobRepository, QueueStats};
+use crate::queues::domain::value_objects::queue_name::QueueName;
 
 /// Сервис для управления задачами в очереди
 pub struct JobService {

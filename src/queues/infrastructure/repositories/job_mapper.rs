@@ -1,8 +1,8 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use sqlx::Row;
-use crate::queues::domain::entities::{Job as DomainJob, JobStatus};
-use crate::queues::domain::value_objects::QueueName;
+use crate::queues::domain::entities::job::{Job as DomainJob, JobStatus, FailedJob as DomainFailedJob};
+use crate::queues::domain::value_objects::queue_name::QueueName;
 
 /// Маппер для преобразования между доменными сущностями и моделями БД
 pub struct JobMapper;
@@ -12,7 +12,7 @@ impl JobMapper {
     pub fn from_row(row: &sqlx::sqlite::SqliteRow) -> Result<DomainJob> {
         let queue_name_str: String = row.get("queue_name");
         let queue_name = QueueName::from_str(&queue_name_str)?;
-        
+
         let status_str: String = row.get("status");
         let status = JobStatus::from_str(&status_str)?;
 
@@ -73,5 +73,41 @@ impl JobStatus {
             "completed" => Ok(JobStatus::Completed),
             _ => Err(anyhow::anyhow!("Unknown job status: {}", s)),
         }
+    }
+}
+
+/// Маппер для преобразования между доменными сущностями FailedJob и моделями БД
+pub struct FailedJobMapper;
+
+impl FailedJobMapper {
+    /// Преобразовать Row из БД в доменную сущность FailedJob
+    pub fn from_row(row: &sqlx::sqlite::SqliteRow) -> Result<DomainFailedJob> {
+        let queue_name_str: String = row.get("queue_name");
+        let queue_name = QueueName::from_str(&queue_name_str)?;
+
+        let status_str: String = row.get("status");
+        let status = JobStatus::from_str(&status_str)?;
+
+        Ok(DomainFailedJob {
+            id: Some(row.get("id")),
+            queue_name,
+            payload: row.get("payload"),
+            status,
+            attempts: row.get("attempts"),
+            max_attempts: row.get("max_attempts"),
+            error_message: row.get::<Option<String>, _>("error_message").unwrap_or_else(|| "Unknown error".to_string()),
+            created_at: JobMapper::parse_datetime(&row.get::<String, _>("created_at"))?,
+            scheduled_at: JobMapper::parse_optional_datetime(row.get::<Option<String>, _>("scheduled_at"))?,
+            started_at: JobMapper::parse_optional_datetime(row.get::<Option<String>, _>("started_at"))?,
+            finished_at: JobMapper::parse_optional_datetime(row.get::<Option<String>, _>("finished_at"))?,
+            failed_at: JobMapper::parse_datetime(&row.get::<String, _>("failed_at"))?,
+        })
+    }
+
+    /// Преобразовать список Row в список доменных сущностей FailedJob
+    pub fn from_rows(rows: Vec<sqlx::sqlite::SqliteRow>) -> Result<Vec<DomainFailedJob>> {
+        rows.iter()
+            .map(Self::from_row)
+            .collect()
     }
 }
