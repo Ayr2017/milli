@@ -228,13 +228,13 @@ impl JobRepository for JobRepositoryAdapter {
         });
 
         // Add mock queue statistics for "emails" queue
-        stats.push(QueueStats {
-            queue_name: QueueName::from_str("emails")?,
-            pending: 2,
-            running: 0,
-            completed: 10,
-            failed: 1,
-        });
+        // stats.push(QueueStats {
+        //     queue_name: QueueName::from_str("emails")?,
+        //     pending: 2,
+        //     running: 0,
+        //     completed: 10,
+        //     failed: 1,
+        // });
 
         Ok(stats)
     }
